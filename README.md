@@ -1,113 +1,114 @@
-# Veltro — Team Feature Assignments
+# Veltro — Frontend
 
-> **Project:** Veltro (Vehicle Parts Selling & Inventory Management System)
-> **Repos:** `Veltro_Backend` | `Veltro_Frontend`
-> **Base branch:** Always create your feature branch from `develop`
+Vehicle Parts Selling and Inventory Management System.
+Built with Next.js 16, TypeScript, Tailwind CSS.
 
 ---
 
-## How to get started
+## Prerequisites
+
+- Node.js 18+
+- npm
+
+---
+
+## Setup
 
 ```bash
-git clone https://github.com/Rajak13/Veltro_Backend.git
-cd Veltro_Backend
+# 1. Clone and checkout develop
+git clone <repo-url>
 git checkout develop
-git pull origin develop
-git checkout -b feature/your-branch-name
+
+# 2. Copy env file and fill in the API URL
+cp .env.local.example .env.local
+
+# 3. Install dependencies
+npm install
+
+# 4. Start dev server
+npm run dev
 ```
 
-Once you're done with a feature, push it and open a **Pull Request → develop**.
-**Do not merge yourself.** Abdul (leader) will review and merge.
+Open http://localhost:3000
 
 ---
 
-## 👑 Abdul Razzaq Ansari — Leader
-
-| # | Feature | Branch |
-|---|---------|--------|
-| 1 | Admin login, dashboard & role-based access | `feature/admin-auth` |
-| 2 | Staff registration & management | `feature/staff-management` |
-| 15 | Low stock alerts & overdue credit email reminders | `feature/alerts-and-notifications` |
-
----
-
-## Rijan Karki
-
-| # | Feature | Branch |
-|---|---------|--------|
-| 3 | Parts management — add, edit, delete vehicle parts | `feature/parts-management` |
-| 5 | Vendor management — CRUD operations | `feature/vendor-management` |
-| 4 | Purchase invoices for stock updates | `feature/purchase-invoices` |
-
----
-
-## Krish Adhikari
-
-| # | Feature | Branch |
-|---|---------|--------|
-| 7 | Sell vehicle parts & create sales invoices | `feature/sales-invoices` |
-| 11 | Send invoices via email to customers | `feature/email-invoices` |
-| 16 | Loyalty program — 10% discount on purchases above 5000 | `feature/loyalty-program` |
-
----
-
-## Punya Kumari Tamang
-
-| # | Feature | Branch |
-|---|---------|--------|
-| 6 | Customer registration with vehicle details | `feature/customer-registration` |
-| 8 | View customer details, history & vehicle info | `feature/customer-history` |
-| 10 | Search customers by name, phone, ID, or vehicle number | `feature/customer-search` |
-
----
-
-## Siddhartha Raj Thapa
-
-| # | Feature | Branch |
-|---|---------|--------|
-| 9 | Customer reports — regulars, high spenders, pending credits | `feature/customer-reports` |
-| 12 | Customer self-registration & profile management | `feature/customer-self-register` |
-| 13 | Book appointments, request unavailable parts & submit reviews | `feature/appointments-and-reviews` |
-| 14 | View complete purchase & service history | `feature/purchase-service-history` |
-
----
-
-## Commit Message Convention
-
-Always write meaningful commit messages — this is worth **5 marks** in the marking scheme.
+## Folder Structure
 
 ```
-feat: add vendor CRUD endpoints
-fix: resolve invoice email not sending
-docs: add API endpoint documentation
-refactor: extract invoice service into separate class
+app/
+  (public)/           ← Landing page (no auth)
+  (auth)/             ← Login + Register pages
+  (admin)/            ← Admin-only pages (role guard)
+  (staff)/            ← Staff-only pages (role guard)
+  (customer)/         ← Customer-only pages (role guard)
+
+components/
+  ui/                 ← Reusable: Button, Input, Modal, Table, Badge, Card, Spinner
+  layout/             ← AdminSidebar, StaffSidebar, CustomerNavbar, PageHeader
+  forms/              ← Feature forms (react-hook-form + zod)
+
+hooks/                ← React Query hooks per domain
+lib/                  ← api.ts (axios), auth.ts, queryClient.ts, utils.ts
+store/                ← Zustand authStore (user, token, role)
+types/                ← All TypeScript interfaces
+constants/            ← ROLES, ROUTES
 ```
 
 ---
 
-## Workflow Summary
+## Pages & Feature Ownership
 
-```
-main          ← milestone releases only (Abdul merges here)
-  └── develop ← all features merge here via Pull Request
-        ├── feature/admin-auth           (Abdul)
-        ├── feature/staff-management     (Abdul)
-        ├── feature/alerts-and-notifications (Abdul)
-        ├── feature/parts-management     (Rijan)
-        ├── feature/vendor-management    (Rijan)
-        ├── feature/purchase-invoices    (Rijan)
-        ├── feature/sales-invoices       (Krish)
-        ├── feature/email-invoices       (Krish)
-        ├── feature/loyalty-program      (Krish)
-        ├── feature/customer-registration  (Punya)
-        ├── feature/customer-history       (Punya)
-        ├── feature/customer-search        (Punya)
-        ├── feature/customer-reports       (Siddhartha)
-        ├── feature/customer-self-register (Siddhartha)
-        ├── feature/appointments-and-reviews (Siddhartha)
-        └── feature/purchase-service-history (Siddhartha)
-```
+| Page | Feature | Branch |
+|------|---------|--------|
+| `/dashboard` | Feature 1 — Financial Reports | `feature/financial-dashboard` |
+| `/staff` | Feature 2 — Staff Management | `feature/staff-management` |
+| `/parts` | Feature 3 — Parts Management | `feature/parts-management` |
+| `/purchase-invoices` | Feature 4 — Purchase Invoices | `feature/purchase-invoices` |
+| `/vendors` | Feature 5 — Vendor Management | `feature/vendor-management` |
+| `/customers` | Feature 6 — Register Customer | `feature/register-customer` |
+| `/sales-invoices` | Feature 7 — Create Sales Invoice | `feature/sales-invoices` |
+| `/customers/[id]` | Feature 8 — Customer Detail + History | `feature/customer-detail` |
+| `/reports` | Feature 9 — Customer Reports | `feature/customer-reports` |
+| `/search` | Feature 10 — Search Customers | `feature/search-customers` |
+| `/customer/profile` | Feature 12 — Customer Profile + Vehicles | `feature/customer-profile` |
+| `/customer/appointments` | Feature 13 — Book Appointments | `feature/book-appointments` |
+| `/customer/part-requests` | Feature 13 — Request Parts | `feature/part-requests` |
+| `/customer/reviews` | Feature 13 — Submit Review | `feature/reviews` |
+| `/customer/history` | Feature 14 — Purchase + Service History | `feature/customer-history` |
 
 ---
 
-*Pre-milestone deadline: **Wednesday, April 9, 2026**. Make sure your first commit is pushed before then.*
+## Design System
+
+**Colors**
+- Primary: `orange-500` (#f97316)
+- Background: `zinc-50` (#fafafa)
+- Text: `zinc-900` / `zinc-500`
+- Borders: `zinc-200`
+
+**Typography**
+- Font: Inter (via next/font/google)
+- Weights: 300, 400, 500, 600, 700
+
+**Reusable Components** (`components/ui/`)
+- `Button` — variants: primary, secondary, danger, ghost, outline
+- `Input` — with label, error state, hint text
+- `Modal` — keyboard-dismissible overlay
+- `Table` — sortable columns, built-in pagination
+- `Badge` — auto-maps status strings to color variants
+- `Card` — consistent white card with border
+- `Spinner` — animated loading indicator
+
+---
+
+## Branch Naming
+
+Always branch from `develop`:
+
+```bash
+git checkout develop
+git checkout -b feature/your-feature-name
+```
+
+Never commit directly to `main` or `develop`.

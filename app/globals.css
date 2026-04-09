@@ -1,0 +1,93 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font-inter, 'Inter', ui-sans-serif, system-ui, sans-serif);
+  background: #fafafa;
+  color: #18181b;
+  overflow-x: hidden;
+}
+
+html { scroll-behavior: smooth; }
+
+/* ── Dot grid background ── */
+.dot-grid {
+  background-image: radial-gradient(circle, #d4d4d8 0.6px, transparent 0.6px);
+  background-size: 28px 28px;
+  mask-image: linear-gradient(to bottom, black 5%, transparent 85%);
+  -webkit-mask-image: linear-gradient(to bottom, black 5%, transparent 85%);
+}
+
+/* ── Float animations ── */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-10px); }
+}
+.float        { animation: float 5s ease-in-out infinite; }
+.float-slow   { animation: float 5s ease-in-out 1.5s infinite; }
+.float-slower { animation: float 5s ease-in-out 3s infinite; }
+
+/* ── Button shine sweep ── */
+.btn-shine { position: relative; overflow: hidden; }
+.btn-shine::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 60%; height: 100%;
+  background: linear-gradient(to right, transparent, rgba(255,255,255,0.2), transparent);
+  transform: skewX(-20deg);
+  transition: left 0.6s ease;
+}
+.btn-shine:hover::before { left: 200%; }
+
+/* ── Phone frame ── */
+.phone {
+  background: #ffffff;
+  border-radius: 2rem;
+  border: 2px solid #e4e4e7;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.02);
+}
+.phone-notch {
+  width: 38%;
+  height: 22px;
+  background: #fff;
+  border-radius: 0 0 14px 14px;
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  border-bottom: 1px solid #f0f0f0;
+  border-left: 1px solid #f0f0f0;
+  border-right: 1px solid #f0f0f0;
+}
+
+/* ── Feature item hover ── */
+.feature-item { transition: all 0.25s ease; cursor: default; }
+.feature-item:hover { background: #fffaf5; }
+.feature-item:hover .feat-num { color: #f97316; }
+.feature-item:hover .feat-line { background: #f97316; width: 2rem; }
+
+/* ── Step hover ── */
+.step-item { transition: all 0.25s ease; }
+.step-item:hover { transform: translateY(-2px); }
+.step-item:hover .step-circle {
+  background: #f97316;
+  color: white;
+  border-color: #f97316;
+}
+
+/* ── Testimonial card ── */
+.testi-card { transition: all 0.25s ease; border-left: 3px solid transparent; }
+.testi-card:hover {
+  border-left-color: #f97316;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: #fafafa; }
+::-webkit-scrollbar-thumb { background: #d4d4d8; border-radius: 3px; }
