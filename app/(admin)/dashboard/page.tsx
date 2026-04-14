@@ -22,6 +22,9 @@ export default function AdminDashboardPage() {
     ? partsData.data.filter((p) => (p.stockQuantity ?? 0) < 10).slice(0, 3)
     : [];
 
+  // Also guard parts page usage
+  const allParts = Array.isArray(partsData?.data) ? partsData.data : [];
+
   const greeting = (() => {
     const h = new Date().getHours();
     return h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
