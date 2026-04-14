@@ -18,7 +18,9 @@ export default function AdminDashboardPage() {
   const { data: report, isLoading } = useFinancialReport();
   const { data: partsData } = useParts(1, 100);
 
-  const lowStockParts = (partsData?.data ?? []).filter((p) => (p.stockQuantity ?? 0) < 10).slice(0, 3);
+  const lowStockParts = Array.isArray(partsData?.data) 
+    ? partsData.data.filter((p) => (p.stockQuantity ?? 0) < 10).slice(0, 3)
+    : [];
 
   const greeting = (() => {
     const h = new Date().getHours();
