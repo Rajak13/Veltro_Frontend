@@ -6,10 +6,10 @@ export const useSalesInvoices = (page = 1, pageSize = 10) =>
   useQuery({
     queryKey: ["sales-invoices", page, pageSize],
     queryFn: async () => {
-      const res = await api.get<PaginatedResponse<SalesInvoice>>("/invoices/sales", {
+      const res = await api.get<ApiResponse<PaginatedResponse<SalesInvoice>>>("/invoices/sales", {
         params: { page, pageSize },
       });
-      return res.data;
+      return res.data.data;
     },
   });
 
@@ -17,10 +17,10 @@ export const usePurchaseInvoices = (page = 1, pageSize = 10) =>
   useQuery({
     queryKey: ["purchase-invoices", page, pageSize],
     queryFn: async () => {
-      const res = await api.get<PaginatedResponse<PurchaseInvoice>>("/invoices/purchase", {
+      const res = await api.get<ApiResponse<PaginatedResponse<PurchaseInvoice>>>("/invoices/purchase", {
         params: { page, pageSize },
       });
-      return res.data;
+      return res.data.data;
     },
   });
 
