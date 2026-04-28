@@ -7,7 +7,7 @@
 
 import { useAuth } from "@/hooks/useAuth";
 import { useMyAppointments } from "@/hooks/useAppointments";
-import { useSalesInvoices } from "@/hooks/useInvoices";
+import { useMyPurchaseHistory } from "@/hooks/useInvoices";
 import {
   TrendingUp, CalendarPlus, Search, Car, Gift,
   ShieldCheck, Disc, Droplets, Wind, BatteryMedium,
@@ -20,16 +20,9 @@ import { ROUTES } from "@/constants/routes";
 export default function CustomerDashboardPage() {
   const { user } = useAuth();
   const { data: appointments } = useMyAppointments();
-  const { data: invoicesData } = useSalesInvoices(1, 6);
+  const { data: purchaseHistory } = useMyPurchaseHistory();
 
-  // TODO [Siddhartha Raj Thapa]: Implement customer dashboard with:
-  // - Vehicle health summary card (AI predictions)
-  // - Upcoming appointment card
-  // - Part requests status
-  // - Purchase & service history tables
-  // - Loyalty progress bar
-
-  const invoices = invoicesData?.data ?? [];
+  const invoices = purchaseHistory || [];
   const upcomingAppt = (appointments ?? []).find(a => a.status === "Pending" || a.status === "Confirmed");
   const lifetimeSpend = invoices.reduce((s, i) => s + (i.finalAmount ?? 0), 0);
   const totalDiscount = invoices.reduce((s, i) => s + ((i.totalAmount ?? 0) - (i.finalAmount ?? 0)), 0);
@@ -251,8 +244,8 @@ export default function CustomerDashboardPage() {
                   <div className="text-[9px] text-zinc-400 mt-0.5">{new Date(upcomingAppt.scheduledDate).toLocaleString("en-US", { weekday: "short" })}</div>
                 </div>
                 <div className="flex-1">
-                  <div className="text-[11px] font-semibold text-zinc-800 mb-0.5">{upcomingAppt.serviceType}</div>
-                  <div className="text-[10px] text-zinc-400 mb-2">{upcomingAppt.notes ?? "Service appointment"}</div>
+                  <div className="text-[11px] font-semibold text-zinc-800 mb-0.5">Service Appointment</div>
+                  <div className="text-[10px] text-zinc-400 mb-2">{upcomingAppt.notes || "Scheduled service"}</div>
                   <div className="flex items-center gap-3">
                     <div className="flex items-center gap-1 text-[10px] text-zinc-500">
                       <Clock className="w-3 h-3" />{new Date(upcomingAppt.scheduledDate).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}
@@ -399,7 +392,7 @@ export default function CustomerDashboardPage() {
                 (appointments ?? []).map(appt => (
                   <tr key={appt.id} className="hover:bg-zinc-50 transition-colors">
                     <td className="px-3.5 py-2.5 text-[12px] text-zinc-400 tabular-nums border-b border-zinc-50">{new Date(appt.scheduledDate).toLocaleDateString()}</td>
-                    <td className="px-3.5 py-2.5 text-[12px] font-medium text-zinc-700 border-b border-zinc-50">{appt.serviceType}</td>
+                    <td className="px-3.5 py-2.5 text-[12px] font-medium text-zinc-700 border-b border-zinc-50">Service</td>
                     <td className="px-3.5 py-2.5 text-[12px] text-zinc-500 border-b border-zinc-50">{appt.notes ?? "—"}</td>
                     <td className="px-3.5 py-2.5 border-b border-zinc-50">
                       <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold ${
