@@ -38,26 +38,28 @@ export interface Staff {
   createdAt: string;
 }
 
-export interface Vendor {
-  id: number;
+export interface Vendor extends Record<string, unknown> {
+  vendorId: string;
   name: string;
-  contactPerson: string;
-  email: string;
-  phone: string;
-  address: string;
-  createdAt: string;
+  contactPerson?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  isActive: boolean;
 }
 
-export interface Part {
-  id: number;
+export interface Part extends Record<string, unknown> {
+  partId: string;
   name: string;
-  description: string;
-  sku: string;
+  description?: string;
   price: number;
   stockQuantity: number;
-  vendorId: number;
-  vendor?: Vendor;
+  lowStockThreshold: number;
+  isLowStock: boolean;
+  vendorName: string;
+  vendorId: string;
   createdAt: string;
+  updatedAt: string;
 }
 
 export interface SalesInvoiceItem {
@@ -85,25 +87,22 @@ export interface SalesInvoice {
 }
 
 export interface PurchaseInvoiceItem {
-  id: number;
-  purchaseInvoiceId: number;
-  partId: number;
-  part?: Part;
+  itemId: string;
+  partId: string;
+  partName: string;
   quantity: number;
   unitPrice: number;
-  subtotal: number;
+  lineTotal: number;
 }
 
-export interface PurchaseInvoice {
-  id: number;
-  vendorId: number;
-  vendor?: Vendor;
-  staffId: number;
-  staff?: Staff;
-  items: PurchaseInvoiceItem[];
+export interface PurchaseInvoice extends Record<string, unknown> {
+  invoiceId: string;
+  vendorId: string;
+  vendorName: string;
   totalAmount: number;
-  status: "Pending" | "Received" | "Cancelled";
-  createdAt: string;
+  purchaseDate: string;
+  notes?: string;
+  items: PurchaseInvoiceItem[];
 }
 
 export interface Appointment {
@@ -151,6 +150,14 @@ export interface ApiResponse<T> {
   success: boolean;
   data: T;
   message: string;
+}
+
+export interface PagedResult<T> {
+  items: T[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
 }
 
 export interface PaginatedResponse<T> {
