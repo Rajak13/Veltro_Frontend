@@ -10,14 +10,14 @@ import PageHeader from "@/components/layout/PageHeader";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import Modal from "@/components/ui/Modal";
+import Spinner from "@/components/ui/Spinner";
+import CreateReviewForm from "@/components/forms/CreateReviewForm";
+import { useMyReviews } from "@/hooks/useReviews";
 import { Star } from "lucide-react";
-import type { Review } from "@/types";
 
 export default function ReviewsPage() {
   const [modalOpen, setModalOpen] = useState(false);
-
-  // TODO [Siddhartha Raj Thapa]: Replace with useQuery hook for reviews
-  const reviews: Review[] = [];
+  const { data: reviews, isLoading } = useMyReviews();
 
   return (
     <div>
@@ -32,10 +32,11 @@ export default function ReviewsPage() {
         }
       />
 
-      {/* TODO [Siddhartha Raj Thapa]: Implement review list with star rating display,
-          comment text, and date. Add star rating input in the form. */}
-
-      {reviews.length ? (
+      {isLoading ? (
+        <div className="flex justify-center py-16">
+          <Spinner size="lg" className="text-orange-500" />
+        </div>
+      ) : reviews?.length ? (
         <div className="space-y-3">
           {reviews.map((review) => (
             <Card key={review.id} padding="md">
@@ -46,9 +47,18 @@ export default function ReviewsPage() {
                     className={`w-4 h-4 ${i < review.rating ? "text-amber-400 fill-amber-400" : "text-zinc-200"}`}
                   />
                 ))}
+                <span className="text-xs text-zinc-400 ml-2">
+                  {review.rating} out of 5 stars
+                </span>
               </div>
-              <p className="text-sm text-zinc-700">{review.comment}</p>
-              <p className="text-xs text-zinc-400 mt-2">{new Date(review.createdAt).toLocaleDateString()}</p>
+              <p className="text-sm text-zinc-700 leading-relaxed">{review.comment}</p>
+              <p className="text-xs text-zinc-400 mt-3">
+                {new Date(review.createdAt).toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
+              </p>
             </Card>
           ))}
         </div>
@@ -59,8 +69,7 @@ export default function ReviewsPage() {
       )}
 
       <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="Write a Review">
-        {/* TODO [Siddhartha Raj Thapa]: Add star rating selector + comment textarea using react-hook-form + zod */}
-        <p className="text-sm text-zinc-400">Form coming soon...</p>
+        <CreateReviewForm onSuccess={() => setModalOpen(false)} />
       </Modal>
     </div>
   );
