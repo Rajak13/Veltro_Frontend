@@ -14,6 +14,8 @@ import Badge, { statusVariant } from "@/components/ui/Badge";
 import CreateSalesInvoiceForm from "@/components/forms/CreateSalesInvoiceForm";
 import { useSalesInvoices, useSendInvoiceEmail } from "@/hooks/useInvoices";
 import { Plus, Tag, Mail } from "lucide-react";
+import { useSalesInvoices } from "@/hooks/useInvoices";
+import { Plus, Tag } from "lucide-react";
 import type { SalesInvoice } from "@/types";
 
 export default function SalesInvoicesPage() {
@@ -130,6 +132,17 @@ export default function SalesInvoicesPage() {
               ),
             },
             {
+            },
+            {
+              key: "saleDate",
+              header: "Date",
+              render: (r) => (
+                <span className="text-zinc-500 tabular-nums text-xs">
+                  {new Date(String(r.saleDate ?? r.createdAt ?? "")).toLocaleDateString()}
+                </span>
+              ),
+            },
+            {
               key: "actions",
               header: "Actions",
               render: (r) => (
@@ -160,6 +173,18 @@ export default function SalesInvoicesPage() {
         size="xl"
       >
         <CreateSalesInvoiceForm onSuccess={() => setCreateOpen(false)} />
+      </Modal>
+
+      {/* ── View invoice detail modal ── */}
+      <Modal
+        open={!!selectedInvoice}
+        onClose={() => setSelectedInvoice(null)}
+        title={`Invoice #${String((selectedInvoice as unknown as Record<string, unknown>)?.invoiceId ?? "").slice(0, 8).toUpperCase()}`}
+        size="lg"
+      >
+        {selectedInvoice && (
+          <InvoiceDetail invoice={selectedInvoice as unknown as Record<string, unknown>} />
+        )}
       </Modal>
 
       {/* ── View invoice detail modal ── */}
@@ -304,6 +329,103 @@ function InvoiceDetail({
           <Mail className="w-3.5 h-3.5" />
           Send Invoice Email
         </Button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Invoice detail panel ─────────────────────────────────────────────────────
+function InvoiceDetail({ invoice }: { invoice: Record<string, unknown> }) {
+  const items = Array.isArray(invoice.items) ? invoice.items as Record<string, unknown>[] : [];
+  const totalAmount = Number(invoice.totalAmount ?? 0);
+  const discount = Number(invoice.discountApplied ?? 0);
+  const finalAmount = Number(invoice.finalAmount ?? totalAmount);
+  const isPaid = Boolean(invoice.isPaid);
+
+  return (
+    <div className="space-y-5 text-sm">
+      {/* Meta */}
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <p className="text-xs text-zinc-400 mb-0.5">Customer</p>
+          <p className="font-medium text-zinc-800">{String(invoice.customerName ?? "—")}</p>
+          <p className="text-zinc-500 text-xs">{String(invoice.customerEmail ?? "")}</p>
+        </div>
+        <div>
+          <p className="text-xs text-zinc-400 mb-0.5">Staff</p>
+          <p className="font-medium text-zinc-800">{String(invoice.staffName ?? "—")}</p>
+        </div>
+        <div>
+          <p className="text-xs text-zinc-400 mb-0.5">Sale Date</p>
+          <p className="text-zinc-700">
+            {new Date(String(invoice.saleDate ?? invoice.createdAt ?? "")).toLocaleString()}
+          </p>
+        </div>
+        <div>
+          <p className="text-xs text-zinc-400 mb-0.5">Payment</p>
+          <Badge label={isPaid ? "Paid" : "Unpaid"} variant={isPaid ? "success" : "warning"} />
+          {isPaid && invoice.paidAt ? (
+            <p className="text-xs text-zinc-400 mt-0.5">
+              {new Date(String(invoice.paidAt)).toLocaleDateString()}
+            </p>
+          ) : null}
+        </div>
+      </div>
+
+      {/* Line items */}
+      {items.length > 0 && (
+        <div>
+          <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-2">
+            Items
+          </p>
+          <div className="rounded-xl border border-zinc-100 overflow-hidden">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="bg-zinc-50 border-b border-zinc-100">
+                  <th className="px-3 py-2 text-left font-semibold text-zinc-500">Part</th>
+                  <th className="px-3 py-2 text-right font-semibold text-zinc-500">Qty</th>
+                  <th className="px-3 py-2 text-right font-semibold text-zinc-500">Unit Price</th>
+                  <th className="px-3 py-2 text-right font-semibold text-zinc-500">Line Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {items.map((item, i) => (
+                  <tr key={i} className="border-b border-zinc-50 last:border-0">
+                    <td className="px-3 py-2 text-zinc-700">{String(item.partName ?? item.partId ?? "—")}</td>
+                    <td className="px-3 py-2 text-right tabular-nums text-zinc-600">{Number(item.quantity)}</td>
+                    <td className="px-3 py-2 text-right tabular-nums text-zinc-600">
+                      Rs. {Number(item.unitPrice ?? 0).toLocaleString()}
+                    </td>
+                    <td className="px-3 py-2 text-right tabular-nums font-medium text-zinc-800">
+                      Rs. {Number(item.lineTotal ?? (Number(item.quantity) * Number(item.unitPrice ?? 0))).toLocaleString()}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Totals */}
+      <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-4 space-y-2">
+        <div className="flex justify-between text-zinc-600">
+          <span>Subtotal</span>
+          <span className="tabular-nums">Rs. {totalAmount.toLocaleString()}</span>
+        </div>
+        {discount > 0 && (
+          <div className="flex justify-between text-green-600">
+            <span className="flex items-center gap-1.5">
+              <Tag className="w-3.5 h-3.5" />
+              Loyalty discount (10%)
+            </span>
+            <span className="tabular-nums">− Rs. {discount.toLocaleString()}</span>
+          </div>
+        )}
+        <div className="flex justify-between font-semibold text-zinc-900 border-t border-zinc-200 pt-2">
+          <span>Total</span>
+          <span className="tabular-nums">Rs. {finalAmount.toLocaleString()}</span>
+        </div>
       </div>
     </div>
   );
