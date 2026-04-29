@@ -54,9 +54,10 @@ export default function SalesInvoicesPage() {
               render: (r) => (
                 <div>
                   <p className="font-medium text-zinc-800">
-                    {String(r.customerName ?? (r.customer as Record<string, unknown>)?.user
-                      ? ((r.customer as Record<string, unknown>).user as Record<string, unknown>)?.name
-                      : "—")}
+                    {String(r.customerName ?? 
+                      (r.customer && typeof r.customer === 'object' && 'user' in r.customer && r.customer.user && typeof r.customer.user === 'object' && 'name' in r.customer.user
+                        ? r.customer.user.name
+                        : "—"))}
                   </p>
                   {r.customerEmail ? (
                     <p className="text-xs text-zinc-400">{String(r.customerEmail)}</p>

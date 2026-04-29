@@ -153,6 +153,7 @@ export default function StaffDashboardPage() {
                   : "bg-zinc-100 border-transparent text-zinc-500 hover:bg-white hover:border-zinc-200 hover:text-zinc-700"
               }`}
             >
+              {f.icon && <span>{f.icon}</span>}
               {f.label}
             </button>
           ))}
