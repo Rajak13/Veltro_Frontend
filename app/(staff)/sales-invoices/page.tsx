@@ -12,8 +12,8 @@ import Table from "@/components/ui/Table";
 import Modal from "@/components/ui/Modal";
 import Badge, { statusVariant } from "@/components/ui/Badge";
 import CreateSalesInvoiceForm from "@/components/forms/CreateSalesInvoiceForm";
-import { useSalesInvoices } from "@/hooks/useInvoices";
-import { Plus, Tag } from "lucide-react";
+import { useSalesInvoices, useSendInvoiceEmail } from "@/hooks/useInvoices";
+import { Plus, Tag, Mail } from "lucide-react";
 import type { SalesInvoice } from "@/types";
 
 export default function SalesInvoicesPage() {
@@ -170,7 +170,10 @@ export default function SalesInvoicesPage() {
         size="lg"
       >
         {selectedInvoice && (
-          <InvoiceDetail invoice={selectedInvoice as unknown as Record<string, unknown>} />
+          <InvoiceDetail
+            invoice={selectedInvoice as unknown as Record<string, unknown>}
+            onClose={() => setSelectedInvoice(null)}
+          />
         )}
       </Modal>
     </div>
@@ -178,12 +181,21 @@ export default function SalesInvoicesPage() {
 }
 
 // ─── Invoice detail panel ─────────────────────────────────────────────────────
-function InvoiceDetail({ invoice }: { invoice: Record<string, unknown> }) {
-  const items = Array.isArray(invoice.items) ? invoice.items as Record<string, unknown>[] : [];
+function InvoiceDetail({
+  invoice,
+  onClose,
+}: {
+  invoice: Record<string, unknown>;
+  onClose: () => void;
+}) {
+  const { mutate: sendEmail, isPending: isSending } = useSendInvoiceEmail();
+
+  const items = Array.isArray(invoice.items) ? (invoice.items as Record<string, unknown>[]) : [];
   const totalAmount = Number(invoice.totalAmount ?? 0);
   const discount = Number(invoice.discountApplied ?? 0);
   const finalAmount = Number(invoice.finalAmount ?? totalAmount);
   const isPaid = Boolean(invoice.isPaid);
+  const invoiceId = String(invoice.invoiceId ?? "");
 
   return (
     <div className="space-y-5 text-sm">
@@ -234,13 +246,20 @@ function InvoiceDetail({ invoice }: { invoice: Record<string, unknown> }) {
               <tbody>
                 {items.map((item, i) => (
                   <tr key={i} className="border-b border-zinc-50 last:border-0">
-                    <td className="px-3 py-2 text-zinc-700">{String(item.partName ?? item.partId ?? "—")}</td>
-                    <td className="px-3 py-2 text-right tabular-nums text-zinc-600">{Number(item.quantity)}</td>
+                    <td className="px-3 py-2 text-zinc-700">
+                      {String(item.partName ?? item.partId ?? "—")}
+                    </td>
+                    <td className="px-3 py-2 text-right tabular-nums text-zinc-600">
+                      {Number(item.quantity)}
+                    </td>
                     <td className="px-3 py-2 text-right tabular-nums text-zinc-600">
                       Rs. {Number(item.unitPrice ?? 0).toLocaleString()}
                     </td>
                     <td className="px-3 py-2 text-right tabular-nums font-medium text-zinc-800">
-                      Rs. {Number(item.lineTotal ?? (Number(item.quantity) * Number(item.unitPrice ?? 0))).toLocaleString()}
+                      Rs.{" "}
+                      {Number(
+                        item.lineTotal ?? Number(item.quantity) * Number(item.unitPrice ?? 0)
+                      ).toLocaleString()}
                     </td>
                   </tr>
                 ))}
@@ -269,6 +288,22 @@ function InvoiceDetail({ invoice }: { invoice: Record<string, unknown> }) {
           <span>Total</span>
           <span className="tabular-nums">Rs. {finalAmount.toLocaleString()}</span>
         </div>
+      </div>
+
+      {/* Actions */}
+      <div className="flex justify-end gap-3 pt-1 border-t border-zinc-100">
+        <Button variant="outline" size="sm" onClick={onClose}>
+          Close
+        </Button>
+        <Button
+          size="sm"
+          loading={isSending}
+          onClick={() => sendEmail(invoiceId)}
+          disabled={!invoiceId}
+        >
+          <Mail className="w-3.5 h-3.5" />
+          Send Invoice Email
+        </Button>
       </div>
     </div>
   );

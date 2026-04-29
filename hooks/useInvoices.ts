@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
 import type { SalesInvoice, PurchaseInvoice, ApiResponse, PaginatedResponse } from "@/types";
+import toast from "react-hot-toast";
 
 export const useSalesInvoices = (page = 1, pageSize = 10) =>
   useQuery({
@@ -41,3 +42,11 @@ export const useCreatePurchaseInvoice = () => {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["purchase-invoices"] }),
   });
 };
+
+export const useSendInvoiceEmail = () =>
+  useMutation({
+    mutationFn: (invoiceId: string) =>
+      api.post<ApiResponse<object>>(`/invoices/sales/${invoiceId}/send-email`).then((r) => r.data),
+    onSuccess: () => toast.success("Invoice email sent to customer"),
+    onError: () => toast.error("Failed to send invoice email"),
+  });
