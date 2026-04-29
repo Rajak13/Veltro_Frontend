@@ -1,6 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
 import type { SalesInvoice, PurchaseInvoice, ApiResponse, PagedResult } from "@/types";
+import type { SalesInvoice, PurchaseInvoice, ApiResponse, PaginatedResponse } from "@/types";
+import toast from "react-hot-toast";
 
 export const useSalesInvoices = (page = 1, pageSize = 10) =>
   useQuery({
@@ -17,6 +19,15 @@ export const useSalesInvoices = (page = 1, pageSize = 10) =>
         pageSize: pagedResult?.pageSize || pageSize,
         totalPages: pagedResult?.totalPages || 1,
       };
+    },
+  });
+
+export const useMyPurchaseHistory = () =>
+  useQuery({
+    queryKey: ["purchase-history", "mine"],
+    queryFn: async () => {
+      const res = await api.get<ApiResponse<SalesInvoice[]>>("/customers/history/purchases");
+      return res.data.data || [];
     },
   });
 
@@ -63,3 +74,11 @@ export const useCreatePurchaseInvoice = () => {
     },
   });
 };
+
+export const useSendInvoiceEmail = () =>
+  useMutation({
+    mutationFn: (invoiceId: string) =>
+      api.post<ApiResponse<object>>(`/invoices/sales/${invoiceId}/send-email`).then((r) => r.data),
+    onSuccess: () => toast.success("Invoice email sent to customer"),
+    onError: () => toast.error("Failed to send invoice email"),
+  });
