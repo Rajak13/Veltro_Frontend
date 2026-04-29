@@ -7,8 +7,15 @@ export const useMyPartRequests = () =>
     queryKey: ["partRequests", "mine"],
     queryFn: async () => {
       try {
-        const res = await api.get<ApiResponse<PartRequest[]>>("/part-requests/my");
-        return res.data.data;
+        const res = await api.get<ApiResponse<any[]>>("/part-requests/my");
+        // Map backend PascalCase to frontend camelCase
+        return res.data.data.map((item: any) => ({
+          id: item.RequestId || item.requestId || item.id,
+          partName: item.PartName || item.partName,
+          description: item.Description || item.description,
+          status: item.Status || item.status,
+          createdAt: item.RequestedAt || item.requestedAt || item.createdAt,
+        })) as PartRequest[];
       } catch (error: any) {
         // Return empty array if endpoint doesn't exist yet
         if (error.response?.status === 404) {

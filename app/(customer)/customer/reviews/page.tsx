@@ -40,16 +40,27 @@ export default function ReviewsPage() {
         <div className="space-y-3">
           {reviews.map((review) => (
             <Card key={review.id} padding="md">
-              <div className="flex items-center gap-1 mb-2">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star
-                    key={i}
-                    className={`w-4 h-4 ${i < review.rating ? "text-amber-400 fill-amber-400" : "text-zinc-200"}`}
-                  />
-                ))}
-                <span className="text-xs text-zinc-400 ml-2">
-                  {review.rating} out of 5 stars
-                </span>
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Star
+                      key={i}
+                      className={`w-4 h-4 ${i < review.rating ? "text-amber-400 fill-amber-400" : "text-zinc-200"}`}
+                    />
+                  ))}
+                  <span className="text-xs text-zinc-400 ml-2">
+                    {review.rating} out of 5 stars
+                  </span>
+                </div>
+                {review.isApproved ? (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-green-50 text-green-700 border border-green-200">
+                    ✓ Approved
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-orange-50 text-orange-700 border border-orange-200">
+                    ⏳ Pending Approval
+                  </span>
+                )}
               </div>
               <p className="text-sm text-zinc-700 leading-relaxed">{review.comment}</p>
               <p className="text-xs text-zinc-400 mt-3">

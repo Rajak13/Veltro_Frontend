@@ -65,7 +65,7 @@ export default function HistoryPage() {
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-semibold text-zinc-900">Rs. {inv.finalAmount.toLocaleString()}</p>
+                  <p className="text-sm font-semibold text-zinc-900">Rs. {(inv.finalAmount ?? inv.totalAmount ?? 0).toLocaleString()}</p>
                   <Badge label={inv.status} variant={statusVariant(inv.status)} />
                 </div>
               </Card>

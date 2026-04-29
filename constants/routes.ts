@@ -10,6 +10,7 @@ export const ROUTES = {
   ADMIN_PARTS: "/parts",
   ADMIN_PURCHASE_INVOICES: "/purchase-invoices",
   ADMIN_VENDORS: "/vendors",
+  ADMIN_CUSTOMERS: "/admin-customers",
 
   // Staff
   STAFF_DASHBOARD: "/staff-dashboard",

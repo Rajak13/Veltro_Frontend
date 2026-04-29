@@ -22,7 +22,7 @@ export default function AppointmentsPage() {
   const { data: appointments, isLoading } = useMyAppointments();
   const { mutateAsync: cancelAppointment, isPending: isCancelling } = useCancelAppointment();
 
-  const handleCancel = async (id: number) => {
+  const handleCancel = async (id: string) => {
     if (!confirm("Are you sure you want to cancel this appointment?")) return;
     
     try {
@@ -52,8 +52,10 @@ export default function AppointmentsPage() {
         </div>
       ) : appointments?.length ? (
         <div className="space-y-3">
-          {appointments.map((appt) => (
-            <Card key={appt.id} padding="md">
+          {appointments.map((appt) => {
+            const id = appt.appointmentId || appt.id?.toString() || "";
+            return (
+            <Card key={id} padding="md">
               <div className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-4 flex-1">
                   <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center flex-shrink-0">
@@ -83,7 +85,7 @@ export default function AppointmentsPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleCancel(appt.id)}
+                      onClick={() => handleCancel(id)}
                       loading={isCancelling}
                       className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
                     >
@@ -93,7 +95,8 @@ export default function AppointmentsPage() {
                 </div>
               </div>
             </Card>
-          ))}
+            );
+          })}
         </div>
       ) : (
         <div className="h-48 flex items-center justify-center text-zinc-400 text-sm border-2 border-dashed border-zinc-100 rounded-xl">

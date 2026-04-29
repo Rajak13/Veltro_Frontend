@@ -130,8 +130,8 @@ export default function ProfilePage() {
                         <span className="font-mono">{vehicle.registrationNumber}</span>
                         {vehicle.mileage && (
                           <>
-                            <span key={`${vehicle.id}-separator`}>•</span>
-                            <span key={`${vehicle.id}-mileage`}>{vehicle.mileage.toLocaleString()} km</span>
+                            <span>•</span>
+                            <span>{vehicle.mileage.toLocaleString()} km</span>
                           </>
                         )}
                       </div>
@@ -139,7 +139,7 @@ export default function ProfilePage() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => handleDeleteVehicle(vehicle.id)}
+                      onClick={() => vehicle.id && handleDeleteVehicle(vehicle.id)}
                       className="text-red-600 hover:text-red-700 hover:bg-red-50"
                     >
                       <Trash2 className="w-3.5 h-3.5" />

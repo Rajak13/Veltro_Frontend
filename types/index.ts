@@ -8,13 +8,14 @@ export interface User {
   createdAt: string;
 }
 
-export interface Vehicle {
-  id: number;
-  customerId: number;
+export interface Vehicle extends Record<string, unknown> {
+  id?: number;
+  vehicleId?: string;
+  customerId?: number | string;
   make: string;
   model: string;
   year: number;
-  registrationNumber: string;
+  registrationNumber?: string;
   mileage?: number;
 }
 
@@ -105,16 +106,17 @@ export interface PurchaseInvoice extends Record<string, unknown> {
   items: PurchaseInvoiceItem[];
 }
 
-export interface Appointment {
-  id: number;
-  customerId: number;
+export interface Appointment extends Record<string, unknown> {
+  id?: number;
+  appointmentId?: string;
+  customerId?: number | string;
   customer?: Customer;
-  vehicleId: number;
+  vehicleId: string;
   vehicle?: Vehicle;
   scheduledDate: string;
   status: "Pending" | "Confirmed" | "Completed" | "Cancelled";
   notes?: string;
-  createdAt: string;
+  createdAt?: string;
 }
 
 export interface PartRequest {
@@ -133,6 +135,7 @@ export interface Review {
   customer?: Customer;
   rating: number;
   comment: string;
+  isApproved: boolean;
   createdAt: string;
 }
 

@@ -32,7 +32,7 @@ export const useCreateAppointment = () => {
 export const useCancelAppointment = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) =>
+    mutationFn: (id: string) =>
       api.put<ApiResponse<Appointment>>(`/appointments/${id}`).then((r) => r.data.data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["appointments"] }),
   });
