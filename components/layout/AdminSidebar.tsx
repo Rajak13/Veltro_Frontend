@@ -5,12 +5,12 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Package, AlertTriangle, Receipt, Truck,
   Users, Contact, BarChart3, Box, Settings, Cog, LogOut,
-  ChevronDown,
+  ChevronDown, X, Menu,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { ROUTES } from "@/constants/routes";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface NavGroup {
   label: string;
@@ -78,67 +78,121 @@ export default function AdminSidebar() {
   const pathname = usePathname();
   const { logout, user } = useAuth();
   const [openGroup, setOpenGroup] = useState<string | null>(null);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   const toggle = (id: string) => setOpenGroup(prev => prev === id ? null : id);
 
   const isGroupActive = (group: NavGroup) =>
     group.children.some(c => pathname === c.href || pathname.startsWith(c.href.split("?")[0]));
 
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
+
+  // Prevent body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [mobileOpen]);
+
   return (
-    <aside className="flex flex-col w-64 min-h-screen bg-white border-r border-zinc-200">
-      {/* Logo */}
-      <div className="flex items-center gap-2.5 px-5 py-4 border-b border-zinc-100">
-        <div className="w-7 h-7 rounded-md bg-orange-500 flex items-center justify-center shadow-sm">
-          <Cog className="w-3.5 h-3.5 text-white" />
-        </div>
-        <span className="text-sm font-semibold text-zinc-900 tracking-tight">Veltro</span>
-        <span className="text-[9px] text-zinc-400 ml-auto font-medium bg-zinc-50 px-1.5 py-0.5 rounded border border-zinc-100">Admin</span>
-      </div>
+    <>
+      {/* Mobile Menu Button */}
+      <button
+        onClick={() => setMobileOpen(true)}
+        className="lg:hidden fixed top-4 left-4 z-40 p-2 bg-white rounded-lg border border-zinc-200 shadow-sm hover:bg-zinc-50 transition-colors"
+        aria-label="Open menu"
+      >
+        <Menu className="w-5 h-5 text-zinc-700" />
+      </button>
 
-      {/* Nav */}
-      <nav className="flex-1 overflow-y-auto py-2 px-0 scrollbar-thin">
-        {/* Overview */}
-        <p className="px-5 pt-1.5 pb-0.5 text-[10px] font-semibold text-zinc-300 uppercase tracking-widest">Overview</p>
-        <NavLink href={ROUTES.ADMIN_DASHBOARD} icon={LayoutDashboard} label="Dashboard" pathname={pathname} />
+      {/* Mobile Overlay */}
+      {mobileOpen && (
+        <div
+          className="lg:hidden fixed inset-0 bg-black/50 z-40 backdrop-blur-sm"
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
 
-        {/* Operations */}
-        <p className="px-5 pt-3 pb-0.5 text-[10px] font-semibold text-zinc-300 uppercase tracking-widest">Operations</p>
-        {navGroups.slice(0, 3).map(group => (
-          <GroupItem key={group.id} group={group} open={openGroup === group.id} active={isGroupActive(group)} onToggle={() => toggle(group.id)} pathname={pathname} />
-        ))}
-        <NavLink href={singleItems[0].href} icon={singleItems[0].icon} label={singleItems[0].label} badge={singleItems[0].badge} pathname={pathname} />
+      {/* Sidebar */}
+      <aside className={cn(
+        "flex flex-col min-h-screen bg-white border-r border-zinc-200 transition-transform duration-300 ease-in-out",
+        // Mobile: fixed drawer
+        "fixed lg:static inset-y-0 left-0 z-50",
+        "w-64 lg:w-64",
+        // Mobile transform
+        mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+      )}>
+        {/* Mobile Close Button */}
+        <button
+          onClick={() => setMobileOpen(false)}
+          className="lg:hidden absolute top-3 right-3 p-1.5 rounded-md hover:bg-zinc-100 transition-colors z-10"
+          aria-label="Close menu"
+        >
+          <X className="w-5 h-5 text-zinc-500" />
+        </button>
 
-        {/* People */}
-        <p className="px-5 pt-3 pb-0.5 text-[10px] font-semibold text-zinc-300 uppercase tracking-widest">People</p>
-        <GroupItem group={navGroups[3]} open={openGroup === navGroups[3].id} active={isGroupActive(navGroups[3])} onToggle={() => toggle(navGroups[3].id)} pathname={pathname} />
-        <NavLink href={singleItems[1].href} icon={singleItems[1].icon} label={singleItems[1].label} pathname={pathname} />
-
-        {/* Analytics */}
-        <p className="px-5 pt-3 pb-0.5 text-[10px] font-semibold text-zinc-300 uppercase tracking-widest">Analytics</p>
-        <GroupItem group={navGroups[4]} open={openGroup === navGroups[4].id} active={isGroupActive(navGroups[4])} onToggle={() => toggle(navGroups[4].id)} pathname={pathname} />
-        <NavLink href={singleItems[2].href} icon={singleItems[2].icon} label={singleItems[2].label} pathname={pathname} />
-
-        {/* System */}
-        <p className="px-5 pt-3 pb-0.5 text-[10px] font-semibold text-zinc-300 uppercase tracking-widest">System</p>
-        <NavLink href={singleItems[3].href} icon={singleItems[3].icon} label={singleItems[3].label} pathname={pathname} />
-      </nav>
-
-      {/* User footer */}
-      <div className="p-3 border-t border-zinc-100">
-        <div className="flex items-center gap-2.5 p-2 rounded-lg bg-zinc-50 border border-zinc-100 cursor-pointer hover:bg-zinc-100 transition-colors group">
-          <div className="w-8 h-8 rounded-md bg-zinc-200 flex items-center justify-center text-xs font-bold text-zinc-500 flex-shrink-0">
-            {user?.name?.charAt(0).toUpperCase() ?? "A"}
+        {/* Logo */}
+        <div className="flex items-center gap-2.5 px-5 py-4 border-b border-zinc-100 pr-12 lg:pr-5">
+          <div className="w-7 h-7 rounded-md bg-orange-500 flex items-center justify-center shadow-sm">
+            <Cog className="w-3.5 h-3.5 text-white" />
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-[11px] font-semibold text-zinc-800 truncate">{user?.name ?? "Admin"}</p>
-            <p className="text-[9px] text-zinc-400 truncate">{user?.email ?? "Super Admin"}</p>
-          </div>
-          <button onClick={logout} title="Sign out">
-            <LogOut className="w-3 h-3 text-zinc-400 group-hover:text-red-500 transition-colors flex-shrink-0" />
-          </button>
+          <span className="text-sm font-semibold text-zinc-900 tracking-tight">Veltro</span>
+          <span className="text-[9px] text-zinc-400 ml-auto font-medium bg-zinc-50 px-1.5 py-0.5 rounded border border-zinc-100">Admin</span>
         </div>
-      </div>
-    </aside>
+
+        {/* Nav */}
+        <nav className="flex-1 overflow-y-auto py-2 px-0 scrollbar-thin">
+          {/* Overview */}
+          <p className="px-5 pt-1.5 pb-0.5 text-[10px] font-semibold text-zinc-300 uppercase tracking-widest">Overview</p>
+          <NavLink href={ROUTES.ADMIN_DASHBOARD} icon={LayoutDashboard} label="Dashboard" pathname={pathname} />
+
+          {/* Operations */}
+          <p className="px-5 pt-3 pb-0.5 text-[10px] font-semibold text-zinc-300 uppercase tracking-widest">Operations</p>
+          {navGroups.slice(0, 3).map(group => (
+            <GroupItem key={group.id} group={group} open={openGroup === group.id} active={isGroupActive(group)} onToggle={() => toggle(group.id)} pathname={pathname} />
+          ))}
+          <NavLink href={singleItems[0].href} icon={singleItems[0].icon} label={singleItems[0].label} badge={singleItems[0].badge} pathname={pathname} />
+
+          {/* People */}
+          <p className="px-5 pt-3 pb-0.5 text-[10px] font-semibold text-zinc-300 uppercase tracking-widest">People</p>
+          <GroupItem group={navGroups[3]} open={openGroup === navGroups[3].id} active={isGroupActive(navGroups[3])} onToggle={() => toggle(navGroups[3].id)} pathname={pathname} />
+          <NavLink href={singleItems[1].href} icon={singleItems[1].icon} label={singleItems[1].label} pathname={pathname} />
+
+          {/* Analytics */}
+          <p className="px-5 pt-3 pb-0.5 text-[10px] font-semibold text-zinc-300 uppercase tracking-widest">Analytics</p>
+          <GroupItem group={navGroups[4]} open={openGroup === navGroups[4].id} active={isGroupActive(navGroups[4])} onToggle={() => toggle(navGroups[4].id)} pathname={pathname} />
+          <NavLink href={singleItems[2].href} icon={singleItems[2].icon} label={singleItems[2].label} pathname={pathname} />
+
+          {/* System */}
+          <p className="px-5 pt-3 pb-0.5 text-[10px] font-semibold text-zinc-300 uppercase tracking-widest">System</p>
+          <NavLink href={singleItems[3].href} icon={singleItems[3].icon} label={singleItems[3].label} pathname={pathname} />
+        </nav>
+
+        {/* User footer */}
+        <div className="p-3 border-t border-zinc-100">
+          <div className="flex items-center gap-2 p-2 rounded-lg bg-zinc-50 border border-zinc-100 cursor-pointer hover:bg-zinc-100 transition-colors group">
+            <div className="w-8 h-8 rounded-md bg-zinc-200 flex items-center justify-center text-xs font-bold text-zinc-500 flex-shrink-0">
+              {user?.name?.charAt(0).toUpperCase() ?? "A"}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[11px] font-semibold text-zinc-800 truncate leading-tight">{user?.name ?? "Admin"}</p>
+              <p className="text-[9px] text-zinc-400 truncate leading-tight mt-0.5">{user?.email ?? "Super Admin"}</p>
+            </div>
+            <button onClick={logout} title="Sign out" className="flex-shrink-0 p-1 hover:bg-zinc-200 rounded transition-colors">
+              <LogOut className="w-3.5 h-3.5 text-zinc-400 group-hover:text-red-500 transition-colors" />
+            </button>
+          </div>
+        </div>
+      </aside>
+    </>
   );
 }
 

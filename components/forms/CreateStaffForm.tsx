@@ -60,7 +60,7 @@ export default function CreateStaffForm({ onSuccess }: Props) {
         Personal Information
       </p>
 
-      <div className="grid grid-cols-2 gap-3 mb-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
         <Field label="First Name" required error={errors.firstName?.message}>
           <IconInput icon={<User className="w-3.5 h-3.5" />} error={!!errors.firstName}>
             <input
@@ -81,7 +81,7 @@ export default function CreateStaffForm({ onSuccess }: Props) {
         </Field>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 mb-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
         <Field label="Email Address" required error={errors.email?.message}>
           <IconInput icon={<Mail className="w-3.5 h-3.5" />} error={!!errors.email}>
             <input
@@ -125,7 +125,7 @@ export default function CreateStaffForm({ onSuccess }: Props) {
         Account Credentials
       </p>
 
-      <div className="grid grid-cols-2 gap-3 mb-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
         <Field label="Password" required error={errors.password?.message}>
           <IconInput icon={<Lock className="w-3.5 h-3.5" />} error={!!errors.password}
             suffix={
@@ -161,11 +161,11 @@ export default function CreateStaffForm({ onSuccess }: Props) {
       </div>
 
       {/* ── Actions ── */}
-      <div className="flex justify-end gap-2.5 pt-2">
-        <Button type="button" variant="outline" onClick={() => { reset(); onSuccess(); }}>
+      <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-2.5 pt-2">
+        <Button type="button" variant="outline" onClick={() => { reset(); onSuccess(); }} className="w-full sm:w-auto">
           Cancel
         </Button>
-        <Button type="submit" loading={isPending}>
+        <Button type="submit" loading={isPending} className="w-full sm:w-auto">
           Add Staff Member
         </Button>
       </div>

@@ -37,7 +37,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* Right column */}
       <div className="flex flex-col flex-1 overflow-hidden">
         {/* Top header */}
-        <header className="h-14 min-h-14 bg-white border-b border-zinc-200 flex items-center px-5 gap-3 z-30">
+        <header className="h-14 min-h-14 bg-white border-b border-zinc-200 flex items-center px-5 gap-3 z-30 lg:px-5 pl-16 lg:pl-5">
           {/* Search */}
           <div className="flex items-center gap-2 bg-zinc-100 border-[1.5px] border-transparent focus-within:bg-white focus-within:border-zinc-200 rounded-lg px-2.5 py-1.5 transition-all flex-1 max-w-xs">
             <Search className="w-3.5 h-3.5 text-zinc-400 flex-shrink-0" />
@@ -71,7 +71,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             backgroundSize: "24px 24px",
           }}
         >
-          <div className="max-w-7xl mx-auto p-6">{children}</div>
+          <div className="max-w-7xl mx-auto p-4 sm:p-6">{children}</div>
         </main>
       </div>
     </div>
