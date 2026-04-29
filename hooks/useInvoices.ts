@@ -14,6 +14,15 @@ export const useSalesInvoices = (page = 1, pageSize = 10) =>
     },
   });
 
+export const useMyPurchaseHistory = () =>
+  useQuery({
+    queryKey: ["purchase-history", "mine"],
+    queryFn: async () => {
+      const res = await api.get<ApiResponse<SalesInvoice[]>>("/customers/history/purchases");
+      return res.data.data || [];
+    },
+  });
+
 export const usePurchaseInvoices = (page = 1, pageSize = 10) =>
   useQuery({
     queryKey: ["purchase-invoices", page, pageSize],

@@ -10,7 +10,7 @@ import PageHeader from "@/components/layout/PageHeader";
 import Card from "@/components/ui/Card";
 import Badge, { statusVariant } from "@/components/ui/Badge";
 import Spinner from "@/components/ui/Spinner";
-import { useSalesInvoices } from "@/hooks/useInvoices";
+import { useMyPurchaseHistory } from "@/hooks/useInvoices";
 import { useMyAppointments } from "@/hooks/useAppointments";
 import { FileText, Calendar } from "lucide-react";
 
@@ -18,7 +18,7 @@ type Tab = "purchases" | "services";
 
 export default function HistoryPage() {
   const [tab, setTab] = useState<Tab>("purchases");
-  const { data: invoices, isLoading: loadingInvoices } = useSalesInvoices();
+  const { data: invoices, isLoading: loadingInvoices } = useMyPurchaseHistory();
   const { data: appointments, isLoading: loadingAppts } = useMyAppointments();
 
   return (
@@ -51,9 +51,9 @@ export default function HistoryPage() {
       {tab === "purchases" && (
         loadingInvoices ? (
           <div className="flex justify-center py-16"><Spinner size="lg" className="text-orange-500" /></div>
-        ) : invoices?.data?.length ? (
+        ) : invoices?.length ? (
           <div className="space-y-3">
-            {invoices.data.map((inv) => (
+            {invoices.map((inv) => (
               <Card key={inv.id} padding="md" className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center flex-shrink-0">
@@ -90,7 +90,7 @@ export default function HistoryPage() {
                     <Calendar className="w-5 h-5 text-zinc-500" />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-zinc-800">{appt.serviceType}</p>
+                    <p className="text-sm font-semibold text-zinc-800">Service Appointment</p>
                     <p className="text-xs text-zinc-400">{new Date(appt.scheduledDate).toLocaleDateString()}</p>
                   </div>
                 </div>
