@@ -6,10 +6,10 @@ export const useCustomers = (page = 1, pageSize = 10, search?: string) =>
   useQuery({
     queryKey: ["customers", page, pageSize, search],
     queryFn: async () => {
-      const res = await api.get<PaginatedResponse<Customer>>("/customers", {
+      const res = await api.get<ApiResponse<PaginatedResponse<Customer>>>("/customers", {
         params: { page, pageSize, search },
       });
-      return res.data;
+      return res.data.data;
     },
   });
 

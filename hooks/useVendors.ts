@@ -6,10 +6,10 @@ export const useVendors = (page = 1, pageSize = 10) =>
   useQuery({
     queryKey: ["vendors", page, pageSize],
     queryFn: async () => {
-      const res = await api.get<PaginatedResponse<Vendor>>("/vendors", {
+      const res = await api.get<ApiResponse<PaginatedResponse<Vendor>>>("/vendors", {
         params: { page, pageSize },
       });
-      return res.data;
+      return res.data.data;
     },
   });
 

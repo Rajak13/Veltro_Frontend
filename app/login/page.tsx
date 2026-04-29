@@ -2,27 +2,50 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Cog, Mail, Lock, Eye, EyeOff,
   Brain, CalendarCheck, History, Gift, ShieldCheck, Bell, Percent,
 } from "lucide-react";
+import { login } from "@/lib/auth";
+import { useAuthStore } from "@/store/authStore";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null);
+  const { setAuth } = useAuthStore();
+  const router = useRouter();
 
   function showToast(msg: string, type: "success" | "error" = "success") {
     setToast({ msg, type });
     setTimeout(() => setToast(null), 3500);
   }
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 1200));
-    setLoading(false);
-    showToast("Welcome back! Redirecting to your dashboard…");
+    try {
+      const form = e.currentTarget;
+      const email = (form.elements.namedItem("email") as HTMLInputElement).value;
+      const password = (form.elements.namedItem("password") as HTMLInputElement).value;
+      const data = await login({ email, password });
+      // Map backend response to User shape expected by the store
+      setAuth(
+        { id: 0, name: data.user.name, email: data.user.email, role: data.user.role as "Admin" | "Staff" | "Customer", createdAt: new Date().toISOString() },
+        data.token
+      );
+      showToast("Welcome back! Redirecting…");
+      setTimeout(() => {
+        if (data.user.role === "Admin") router.push("/dashboard");
+        else if (data.user.role === "Staff") router.push("/staff-dashboard");
+        else router.push("/customer/dashboard");
+      }, 800);
+    } catch {
+      showToast("Invalid email or password.", "error");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -63,6 +86,7 @@ export default function LoginPage() {
               <div className="relative mb-4">
                 <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 pointer-events-none" />
                 <input
+                  name="email"
                   type="email"
                   placeholder="Email address"
                   required
@@ -74,6 +98,7 @@ export default function LoginPage() {
               <div className="relative mb-5">
                 <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 pointer-events-none" />
                 <input
+                  name="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="Password"
                   required

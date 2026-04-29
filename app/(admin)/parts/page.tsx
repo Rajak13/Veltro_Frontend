@@ -19,7 +19,7 @@ export default function PartsPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const { data, isLoading } = useParts(page);
 
-  const lowStockCount = (data?.data ?? []).filter((p) => (p.stockQuantity ?? 0) < 10).length;
+  const lowStockCount = Array.isArray(data?.data) ? data.data.filter((p) => (p.stockQuantity ?? 0) < 10).length : 0;
 
   return (
     <div>
@@ -83,7 +83,7 @@ export default function PartsPage() {
               ),
             },
           ]}
-          data={(data?.data ?? []) as unknown as Record<string, unknown>[]}
+          data={(Array.isArray(data?.data) ? data.data : []) as unknown as Record<string, unknown>[]}
           isLoading={isLoading}
           page={page}
           totalPages={data?.totalPages}

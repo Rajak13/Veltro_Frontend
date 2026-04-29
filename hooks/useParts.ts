@@ -6,10 +6,11 @@ export const useParts = (page = 1, pageSize = 10) =>
   useQuery({
     queryKey: ["parts", page, pageSize],
     queryFn: async () => {
-      const res = await api.get<PaginatedResponse<Part>>("/parts", {
+      const res = await api.get<ApiResponse<PaginatedResponse<Part>>>("/parts", {
         params: { page, pageSize },
       });
-      return res.data;
+      // Backend wraps paginated result in ApiResponse: { success, data: { data: [], totalCount, ... } }
+      return res.data.data;
     },
   });
 
