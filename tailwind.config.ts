@@ -12,6 +12,10 @@ const config: Config = {
       fontFamily: {
         inter: ["var(--font-inter)", "Inter", "sans-serif"],
       },
+      screens: {
+        'xs': '475px',
+        '3xl': '1920px',
+      },
     },
   },
   plugins: [],

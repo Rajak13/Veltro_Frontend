@@ -26,8 +26,15 @@ export default function Modal({ open, onClose, title, children, size = "md" }: M
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
-    if (open) document.addEventListener("keydown", handleKey);
-    return () => document.removeEventListener("keydown", handleKey);
+    if (open) {
+      document.addEventListener("keydown", handleKey);
+      // Prevent body scroll when modal is open
+      document.body.style.overflow = 'hidden';
+    }
+    return () => {
+      document.removeEventListener("keydown", handleKey);
+      document.body.style.overflow = 'unset';
+    };
   }, [open, onClose]);
 
   if (!open) return null;
@@ -35,28 +42,31 @@ export default function Modal({ open, onClose, title, children, size = "md" }: M
   return (
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40 backdrop-blur-sm"
       onClick={(e) => e.target === overlayRef.current && onClose()}
     >
       <div
         className={cn(
-          "w-full bg-white rounded-2xl shadow-xl border border-zinc-200 overflow-hidden",
+          "w-full bg-white shadow-xl border border-zinc-200 overflow-hidden",
+          "rounded-t-2xl sm:rounded-2xl",  // Top corners on mobile, all corners on desktop
+          "max-h-[90vh] sm:max-h-[85vh]",  // Limit height
+          "flex flex-col",  // Allow content to scroll
           sizes[size]
         )}
       >
         {title && (
-          <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-100">
-            <h2 className="text-base font-semibold text-zinc-900">{title}</h2>
+          <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-zinc-100 flex-shrink-0">
+            <h2 className="text-base sm:text-lg font-semibold text-zinc-900">{title}</h2>
             <button
               onClick={onClose}
-              className="w-8 h-8 flex items-center justify-center rounded-lg text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 transition-colors"
+              className="w-8 h-8 flex items-center justify-center rounded-lg text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 transition-colors flex-shrink-0"
               aria-label="Close modal"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
         )}
-        <div className="p-6">{children}</div>
+        <div className="p-4 sm:p-6 overflow-y-auto flex-1">{children}</div>
       </div>
     </div>
   );

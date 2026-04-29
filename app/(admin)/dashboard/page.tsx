@@ -40,44 +40,44 @@ export default function AdminDashboardPage() {
   return (
     <div>
       {/* Greeting */}
-      <div className="flex items-end justify-between mb-5">
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-4 sm:mb-5">
         <div>
-          <h1 className="text-lg font-semibold text-zinc-900">{greeting}, {report ? "Admin" : "..."}</h1>
-          <p className="text-xs text-zinc-400 mt-0.5">{dateStr}</p>
+          <h1 className="text-base sm:text-lg font-semibold text-zinc-900">{greeting}, {report ? "Admin" : "..."}</h1>
+          <p className="text-[10px] sm:text-xs text-zinc-400 mt-0.5">{dateStr}</p>
         </div>
         <div className="flex gap-1.5 flex-wrap">
           <Link href={ROUTES.ADMIN_PARTS + "?action=new"} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium border-[1.5px] border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 transition-all">
-            <Plus className="w-3 h-3 text-orange-500" />Add Part
+            <Plus className="w-3 h-3 text-orange-500" /><span className="hidden xs:inline">Add Part</span><span className="xs:hidden">Part</span>
           </Link>
           <Link href="/sales-invoices?action=new" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium border-[1.5px] border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 transition-all">
-            <FilePlus className="w-3 h-3 text-orange-500" />Invoice
+            <FilePlus className="w-3 h-3 text-orange-500" /><span className="hidden xs:inline">Invoice</span><span className="xs:hidden">Inv</span>
           </Link>
           <Link href={ROUTES.ADMIN_STAFF + "?action=new"} className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium border-[1.5px] border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 transition-all">
             <UserPlus className="w-3 h-3 text-orange-500" />Staff
           </Link>
-          <button className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium border-[1.5px] border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 transition-all">
+          <button className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium border-[1.5px] border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 transition-all">
             <Download className="w-3 h-3" />Export
           </button>
         </div>
       </div>
 
       {/* Hero card */}
-      <div className="relative rounded-2xl overflow-hidden mb-4 p-5" style={{ background: "#18181b", border: "1px solid #27272a" }}>
+      <div className="relative rounded-xl sm:rounded-2xl overflow-hidden mb-3 sm:mb-4 p-4 sm:p-5" style={{ background: "#18181b", border: "1px solid #27272a" }}>
         <div className="absolute top-0 right-0 w-1/2 h-full pointer-events-none" style={{ background: "radial-gradient(ellipse at top right, rgba(249,115,22,0.06) 0%, transparent 70%)" }} />
         <div className="absolute bottom-0 left-1/3 w-2/5 h-4/5 pointer-events-none" style={{ background: "radial-gradient(ellipse, rgba(249,115,22,0.04) 0%, transparent 60%)" }} />
         <div className="relative z-10">
           <div className="flex items-start justify-between mb-1">
             <div>
-              <p className="text-[10px] text-zinc-500 font-medium mb-1">Monthly Revenue</p>
-              <div className="flex items-baseline gap-3">
-                <span className="text-3xl font-semibold text-white tabular-nums">
+              <p className="text-[9px] sm:text-[10px] text-zinc-500 font-medium mb-1">Monthly Revenue</p>
+              <div className="flex items-baseline gap-2 sm:gap-3">
+                <span className="text-2xl sm:text-3xl font-semibold text-white tabular-nums">
                   Rs. {report?.totalRevenue?.toLocaleString() ?? "—"}
                 </span>
-                <span className="text-xs font-medium text-orange-400 flex items-center gap-0.5">
-                  <TrendingUp className="w-3 h-3" />12.5%
+                <span className="text-[11px] sm:text-xs font-medium text-orange-400 flex items-center gap-0.5">
+                  <TrendingUp className="w-2.5 h-2.5 sm:w-3 sm:h-3" />12.5%
                 </span>
               </div>
-              <p className="text-[10px] text-zinc-500 mt-0.5">vs previous period</p>
+              <p className="text-[9px] sm:text-[10px] text-zinc-500 mt-0.5">vs previous period</p>
             </div>
           </div>
 
@@ -94,16 +94,16 @@ export default function AdminDashboardPage() {
           </svg>
 
           {/* Mini stats */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-2.5">
             {[
               { label: "Total Revenue", value: `Rs. ${report?.totalRevenue?.toLocaleString() ?? "—"}` },
               { label: "Expenses",      value: `Rs. ${report?.totalExpenses?.toLocaleString() ?? "—"}` },
               { label: "Net Profit",    value: `Rs. ${report?.netProfit?.toLocaleString() ?? "—"}` },
               { label: "Parts Sold",    value: report?.topSellingParts?.reduce((a, p) => a + p.quantity, 0)?.toLocaleString() ?? "—" },
             ].map(({ label, value }) => (
-              <div key={label} className="rounded-lg p-2.5 transition-colors" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
-                <p className="text-[9px] text-zinc-500 mb-0.5">{label}</p>
-                <p className="text-sm font-semibold text-white tabular-nums">{value}</p>
+              <div key={label} className="rounded-md sm:rounded-lg p-2 sm:p-2.5 transition-colors" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                <p className="text-[8px] sm:text-[9px] text-zinc-500 mb-0.5">{label}</p>
+                <p className="text-xs sm:text-sm font-semibold text-white tabular-nums truncate">{value}</p>
               </div>
             ))}
           </div>

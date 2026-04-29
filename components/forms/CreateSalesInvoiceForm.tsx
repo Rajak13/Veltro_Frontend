@@ -55,31 +55,34 @@ export default function CreateSalesInvoiceForm({ onSuccess }: Props) {
       />
 
       <div>
-        <div className="flex items-center justify-between mb-2">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
           <label className="text-sm font-medium text-zinc-700">Line Items</label>
-          <Button type="button" variant="outline" size="sm" onClick={() => append({ partId: 0, quantity: 1 })}>
+          <Button type="button" variant="outline" size="sm" onClick={() => append({ partId: 0, quantity: 1 })} className="w-full sm:w-auto">
             <Plus className="w-3.5 h-3.5" /> Add Item
           </Button>
         </div>
         <div className="space-y-2">
           {fields.map((field, i) => (
-            <div key={field.id} className="flex gap-2 items-start">
-              <Input
-                placeholder="Part ID"
-                {...register(`items.${i}.partId`)}
-                error={errors.items?.[i]?.partId?.message}
-                type="number"
-                hint="TODO: Replace with part search"
-              />
-              <Input
-                placeholder="Qty"
-                {...register(`items.${i}.quantity`)}
-                error={errors.items?.[i]?.quantity?.message}
-                type="number"
-                className="w-24"
-              />
+            <div key={field.id} className="flex flex-col sm:flex-row gap-2 items-start">
+              <div className="w-full sm:flex-1">
+                <Input
+                  placeholder="Part ID"
+                  {...register(`items.${i}.partId`)}
+                  error={errors.items?.[i]?.partId?.message}
+                  type="number"
+                  hint="TODO: Replace with part search"
+                />
+              </div>
+              <div className="w-full sm:w-24">
+                <Input
+                  placeholder="Qty"
+                  {...register(`items.${i}.quantity`)}
+                  error={errors.items?.[i]?.quantity?.message}
+                  type="number"
+                />
+              </div>
               {fields.length > 1 && (
-                <button type="button" onClick={() => remove(i)} className="mt-7 p-2 text-red-400 hover:text-red-600">
+                <button type="button" onClick={() => remove(i)} className="sm:mt-7 p-2 text-red-400 hover:text-red-600 self-start">
                   <Trash2 className="w-4 h-4" />
                 </button>
               )}
@@ -89,8 +92,8 @@ export default function CreateSalesInvoiceForm({ onSuccess }: Props) {
         {errors.items?.message && <p className="text-xs text-red-500 mt-1">{errors.items.message}</p>}
       </div>
 
-      <div className="flex justify-end gap-3 pt-2">
-        <Button type="submit" loading={isPending}>Create Invoice</Button>
+      <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 pt-2">
+        <Button type="submit" loading={isPending} className="w-full sm:w-auto">Create Invoice</Button>
       </div>
     </form>
   );
