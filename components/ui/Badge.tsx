@@ -24,7 +24,8 @@ const variants: Record<BadgeVariant, string> = {
 };
 
 // Auto-map common status strings to variants
-export function statusVariant(status: string): BadgeVariant {
+export function statusVariant(status: string | undefined | null): BadgeVariant {
+  if (!status) return "neutral";
   const s = status.toLowerCase();
   if (["completed", "confirmed", "received", "sourced"].includes(s)) return "success";
   if (["pending"].includes(s)) return "warning";

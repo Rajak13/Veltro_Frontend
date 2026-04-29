@@ -8,6 +8,7 @@
 import { useAuth } from "@/hooks/useAuth";
 import { useMyAppointments } from "@/hooks/useAppointments";
 import { useMyPurchaseHistory } from "@/hooks/useInvoices";
+import { useMyProfile } from "@/hooks/useCustomers";
 import {
   TrendingUp, CalendarPlus, Search, Car, Gift,
   ShieldCheck, Disc, Droplets, Wind, BatteryMedium,
@@ -20,6 +21,8 @@ import { ROUTES } from "@/constants/routes";
 export default function CustomerDashboardPage() {
   const { user } = useAuth();
   const { data: appointments } = useMyAppointments();
+  const { data: profile } = useMyProfile();
+  const primaryVehicle = profile?.vehicles?.[0];
   const { data: purchaseHistory } = useMyPurchaseHistory();
 
   const invoices = purchaseHistory || [];
@@ -162,14 +165,14 @@ export default function CustomerDashboardPage() {
                 <Car className="w-7 h-7 text-zinc-400" />
               </div>
               <div>
-                <div className="text-sm font-semibold text-zinc-900">My Vehicle</div>
+                <div className="text-sm font-semibold text-zinc-900">{primaryVehicle ? `${primaryVehicle.year} ${primaryVehicle.make} ${primaryVehicle.model}` : "My Vehicle"}</div>
                 <div className="text-[10px] text-zinc-400">Registered vehicle</div>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-2">
               {[
-                { label: "Registration", value: "—" },
-                { label: "Odometer",     value: "—" },
+                { label: "Registration", value: primaryVehicle?.registrationNumber || "—" },
+                { label: "Odometer",     value: primaryVehicle?.mileage ? `${primaryVehicle.mileage.toLocaleString()} km` : "—" },
                 { label: "Last Service", value: (appointments ?? []).filter(a => a.status === "Completed").slice(-1)[0] ? new Date((appointments ?? []).filter(a => a.status === "Completed").slice(-1)[0].scheduledDate).toLocaleDateString() : "—" },
                 { label: "Next Due",     value: upcomingAppt ? new Date(upcomingAppt.scheduledDate).toLocaleDateString() : "—", orange: !!upcomingAppt },
               ].map(({ label, value, orange }) => (
@@ -405,7 +408,7 @@ export default function CustomerDashboardPage() {
                     <td className="px-3.5 py-2.5 border-b border-zinc-50">
                       <div className="flex items-center gap-0.5">
                         {Array.from({ length: 5 }).map((_, i) => (
-                          <Star key={i} className={`w-3 h-3 ${i < 4 ? "text-amber-400 fill-amber-400" : "text-zinc-200"}`} />
+                          <Star key={`star-${appt.id}-${i}`} className={`w-3 h-3 ${i < 4 ? "text-amber-400 fill-amber-400" : "text-zinc-200"}`} />
                         ))}
                       </div>
                     </td>

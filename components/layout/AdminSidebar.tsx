@@ -69,7 +69,7 @@ const navGroups: NavGroup[] = [
 
 const singleItems: NavItem[] = [
   { label: "Low Stock Alerts", href: "/parts?filter=low-stock", icon: AlertTriangle, badge: 3 },
-  { label: "Customers",        href: ROUTES.STAFF_CUSTOMERS,    icon: Contact },
+  { label: "Customers",        href: ROUTES.ADMIN_CUSTOMERS,    icon: Contact },
   { label: "Inventory Report", href: "/reports/inventory",      icon: Box },
   { label: "Settings",         href: "/settings",               icon: Settings },
 ];
