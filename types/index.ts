@@ -112,7 +112,6 @@ export interface Appointment {
   customer?: Customer;
   vehicleId: number;
   vehicle?: Vehicle;
-  serviceType: string;
   scheduledDate: string;
   status: "Pending" | "Confirmed" | "Completed" | "Cancelled";
   notes?: string;

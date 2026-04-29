@@ -12,12 +12,26 @@ import Card from "@/components/ui/Card";
 import Modal from "@/components/ui/Modal";
 import Badge, { statusVariant } from "@/components/ui/Badge";
 import Spinner from "@/components/ui/Spinner";
-import { useMyAppointments } from "@/hooks/useAppointments";
-import { Plus, Calendar } from "lucide-react";
+import { useMyAppointments, useCancelAppointment } from "@/hooks/useAppointments";
+import BookAppointmentForm from "@/components/forms/BookAppointmentForm";
+import { Plus, Calendar, X, Clock } from "lucide-react";
+import toast from "react-hot-toast";
 
 export default function AppointmentsPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const { data: appointments, isLoading } = useMyAppointments();
+  const { mutateAsync: cancelAppointment, isPending: isCancelling } = useCancelAppointment();
+
+  const handleCancel = async (id: number) => {
+    if (!confirm("Are you sure you want to cancel this appointment?")) return;
+    
+    try {
+      await cancelAppointment(id);
+      toast.success("Appointment cancelled successfully");
+    } catch {
+      toast.error("Failed to cancel appointment");
+    }
+  };
 
   return (
     <div>
@@ -32,10 +46,6 @@ export default function AppointmentsPage() {
         }
       />
 
-      {/* TODO [Siddhartha Raj Thapa]: Implement appointment list with status badges,
-          cancel button for pending appointments, and BookAppointmentForm in modal.
-          Show date, service type, vehicle, and status for each appointment. */}
-
       {isLoading ? (
         <div className="flex justify-center py-16">
           <Spinner size="lg" className="text-orange-500" />
@@ -43,17 +53,45 @@ export default function AppointmentsPage() {
       ) : appointments?.length ? (
         <div className="space-y-3">
           {appointments.map((appt) => (
-            <Card key={appt.id} padding="md" className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center flex-shrink-0">
-                  <Calendar className="w-5 h-5 text-orange-500" />
+            <Card key={appt.id} padding="md">
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-4 flex-1">
+                  <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center flex-shrink-0">
+                    <Calendar className="w-5 h-5 text-orange-500" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-zinc-800">Service Appointment</p>
+                    <div className="flex items-center gap-3 mt-1">
+                      <p className="text-xs text-zinc-400 flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        {new Date(appt.scheduledDate).toLocaleDateString("en-US", { 
+                          weekday: "short", 
+                          year: "numeric", 
+                          month: "short", 
+                          day: "numeric" 
+                        })}
+                      </p>
+                      {appt.notes && (
+                        <p className="text-xs text-zinc-400">• {appt.notes}</p>
+                      )}
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm font-semibold text-zinc-800">{appt.serviceType}</p>
-                  <p className="text-xs text-zinc-400">{new Date(appt.scheduledDate).toLocaleDateString()}</p>
+                <div className="flex items-center gap-2">
+                  <Badge label={appt.status} variant={statusVariant(appt.status)} />
+                  {(appt.status === "Pending" || appt.status === "Confirmed") && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleCancel(appt.id)}
+                      loading={isCancelling}
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                    >
+                      <X className="w-3.5 h-3.5" /> Cancel
+                    </Button>
+                  )}
                 </div>
               </div>
-              <Badge label={appt.status} variant={statusVariant(appt.status)} />
             </Card>
           ))}
         </div>
@@ -64,8 +102,7 @@ export default function AppointmentsPage() {
       )}
 
       <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="Book Appointment" size="lg">
-        {/* TODO [Siddhartha Raj Thapa]: Replace with <BookAppointmentForm onSuccess={() => setModalOpen(false)} /> */}
-        <p className="text-sm text-zinc-400">Form coming soon...</p>
+        <BookAppointmentForm onSuccess={() => setModalOpen(false)} />
       </Modal>
     </div>
   );
