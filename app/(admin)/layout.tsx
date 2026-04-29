@@ -5,8 +5,9 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import AdminSidebar from "@/components/layout/AdminSidebar";
 import Spinner from "@/components/ui/Spinner";
+import NotificationBell from "@/components/ui/NotificationBell";
 import { ROLES } from "@/constants/roles";
-import { Bell, Maximize2, Search } from "lucide-react";
+import { Maximize2, Search } from "lucide-react";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { role, isAuthenticated, user } = useAuth();
@@ -49,10 +50,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
 
           <div className="flex items-center gap-2 ml-auto">
-            <button className="w-8 h-8 rounded-md border-[1.5px] border-zinc-200 bg-white flex items-center justify-center text-zinc-500 hover:bg-zinc-50 hover:border-zinc-300 transition-all relative">
-              <Bell className="w-3.5 h-3.5" />
-              <span className="absolute top-0.5 right-0.5 w-1.5 h-1.5 bg-orange-500 rounded-full border-[1.5px] border-white" />
-            </button>
+            <NotificationBell />
             <button
               className="w-8 h-8 rounded-md border-[1.5px] border-zinc-200 bg-white flex items-center justify-center text-zinc-500 hover:bg-zinc-50 hover:border-zinc-300 transition-all"
               onClick={() => document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen()}

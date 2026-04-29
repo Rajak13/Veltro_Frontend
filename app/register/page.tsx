@@ -2,10 +2,13 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Cog, Mail, Lock, Eye, EyeOff, User, Phone,
   Brain, Gift, CalendarCheck, PackageSearch,
 } from "lucide-react";
+import { register } from "@/lib/auth";
+import { useAuthStore } from "@/store/authStore";
 
 function getStrength(pw: string): 0 | 1 | 2 | 3 | 4 {
   let s = 0;
@@ -30,6 +33,8 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading]   = useState(false);
   const [toast, setToast]       = useState<{ msg: string; type: "success" | "error" } | null>(null);
+  const { setAuth } = useAuthStore();
+  const router = useRouter();
 
   const strength = getStrength(password);
   const meta     = strengthMeta[strength];
@@ -47,9 +52,27 @@ export default function RegisterPage() {
     if (pw !== cpw) { showToast("Passwords do not match.", "error"); return; }
     if (pw.length < 6) { showToast("Password must be at least 6 characters.", "error"); return; }
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 1500));
-    setLoading(false);
-    showToast("Account created! Please sign in.");
+    try {
+      const firstName = (form.elements.namedItem("firstName") as HTMLInputElement).value;
+      const lastName  = (form.elements.namedItem("lastName")  as HTMLInputElement).value;
+      const data = await register({
+        fullName: `${firstName} ${lastName}`.trim(),
+        email:    (form.elements.namedItem("email")    as HTMLInputElement).value,
+        password: pw,
+        phone:    (form.elements.namedItem("phone")    as HTMLInputElement).value,
+        address:  "",
+      });
+      setAuth(
+        { id: 0, name: data.user.name, email: data.user.email, role: data.user.role as "Admin" | "Staff" | "Customer", createdAt: new Date().toISOString() },
+        data.token
+      );
+      showToast("Account created! Redirecting…");
+      setTimeout(() => router.push("/customer/dashboard"), 800);
+    } catch {
+      showToast("Registration failed. Email may already be in use.", "error");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (

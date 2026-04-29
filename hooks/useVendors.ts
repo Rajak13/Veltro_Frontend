@@ -1,19 +1,29 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
-import type { Vendor, ApiResponse, PaginatedResponse } from "@/types";
+import type { Vendor, ApiResponse, PagedResult } from "@/types";
 
 export const useVendors = (page = 1, pageSize = 10) =>
   useQuery({
     queryKey: ["vendors", page, pageSize],
     queryFn: async () => {
-      const res = await api.get<PaginatedResponse<Vendor>>("/vendors", {
+      const res = await api.get<ApiResponse<PagedResult<Vendor>>>("/vendors", {
         params: { page, pageSize },
       });
-      return res.data;
+      // Backend returns: { success, data: { items, totalCount, page, pageSize, totalPages } }
+      const pagedResult = res.data.data;
+      // Filter out inactive vendors (soft-deleted)
+      const activeVendors = (pagedResult?.items || []).filter((v) => v.isActive);
+      return {
+        data: activeVendors,
+        totalCount: activeVendors.length,
+        page: pagedResult?.page || page,
+        pageSize: pagedResult?.pageSize || pageSize,
+        totalPages: Math.ceil(activeVendors.length / pageSize) || 1,
+      };
     },
   });
 
-export const useVendor = (id: number) =>
+export const useVendor = (id: string) =>
   useQuery({
     queryKey: ["vendors", id],
     queryFn: async () => {
@@ -28,23 +38,32 @@ export const useCreateVendor = () => {
   return useMutation({
     mutationFn: (data: Partial<Vendor>) =>
       api.post<ApiResponse<Vendor>>("/vendors", data).then((r) => r.data.data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["vendors"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["vendors"] });
+      qc.refetchQueries({ queryKey: ["vendors"] });
+    },
   });
 };
 
 export const useUpdateVendor = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, ...data }: Partial<Vendor> & { id: number }) =>
-      api.put<ApiResponse<Vendor>>(`/vendors/${id}`, data).then((r) => r.data.data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["vendors"] }),
+    mutationFn: ({ vendorId, ...data }: Partial<Vendor> & { vendorId: string }) =>
+      api.put<ApiResponse<Vendor>>(`/vendors/${vendorId}`, data).then((r) => r.data.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["vendors"] });
+      qc.refetchQueries({ queryKey: ["vendors"] });
+    },
   });
 };
 
 export const useDeleteVendor = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => api.delete(`/vendors/${id}`),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["vendors"] }),
+    mutationFn: (id: string) => api.delete(`/vendors/${id}`),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["vendors"] });
+      qc.refetchQueries({ queryKey: ["vendors"] });
+    },
   });
 };

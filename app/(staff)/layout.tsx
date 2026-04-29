@@ -6,7 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import StaffSidebar from "@/components/layout/StaffSidebar";
 import Spinner from "@/components/ui/Spinner";
 import { ROLES } from "@/constants/roles";
-import { Bell, Search } from "lucide-react";
+import { Bell } from "lucide-react";
 
 export default function StaffLayout({ children }: { children: React.ReactNode }) {
   const { role, isAuthenticated, user } = useAuth();
@@ -35,16 +35,6 @@ export default function StaffLayout({ children }: { children: React.ReactNode })
       <div className="flex flex-col flex-1 overflow-hidden">
         {/* Top header */}
         <header className="h-14 min-h-14 bg-white border-b border-zinc-200 flex items-center px-5 gap-3 z-30">
-          <div className="flex items-center gap-2 bg-zinc-100 border-[1.5px] border-transparent focus-within:bg-white focus-within:border-orange-300 focus-within:shadow-[0_0_0_3px_rgba(249,115,22,0.07)] rounded-lg px-2.5 py-1.5 transition-all flex-1 max-w-sm">
-            <Search className="w-3.5 h-3.5 text-zinc-400 flex-shrink-0" />
-            <input
-              type="text"
-              placeholder="Search by name, phone, vehicle no., or ID..."
-              className="bg-transparent border-none outline-none text-[13px] text-zinc-800 placeholder:text-zinc-400 w-full"
-            />
-            <span className="text-[10px] text-zinc-300 bg-white border border-zinc-200 rounded px-1 py-0.5 font-mono hidden sm:block">⌘K</span>
-          </div>
-
           <div className="flex items-center gap-2 ml-auto">
             <button className="w-8 h-8 rounded-md border-[1.5px] border-zinc-200 bg-white flex items-center justify-center text-zinc-500 hover:bg-zinc-50 hover:border-zinc-300 transition-all relative">
               <Bell className="w-3.5 h-3.5" />
