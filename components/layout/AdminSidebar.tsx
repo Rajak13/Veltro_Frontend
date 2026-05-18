@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Package, AlertTriangle, Receipt, Truck,
-  Users, Contact, BarChart3, Box, Settings, Cog, LogOut,
+  Users, Contact, BarChart3, Box, Settings, Cog, LogOut, Star,
   ChevronDown, X, Menu,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -60,9 +60,9 @@ const navGroups: NavGroup[] = [
   {
     label: "Financial Reports", id: "fin", icon: BarChart3,
     children: [
-      { label: "Daily Report",   href: "/reports/daily" },
-      { label: "Monthly Report", href: "/reports/monthly" },
-      { label: "Yearly Report",  href: "/reports/yearly" },
+      { label: "Daily Report",   href: "/reports?period=daily" },
+      { label: "Monthly Report", href: "/reports?period=monthly" },
+      { label: "Yearly Report",  href: "/reports?period=yearly" },
     ],
   },
 ];
@@ -70,8 +70,9 @@ const navGroups: NavGroup[] = [
 const singleItems: NavItem[] = [
   { label: "Low Stock Alerts", href: "/parts?filter=low-stock", icon: AlertTriangle, badge: 3 },
   { label: "Customers",        href: ROUTES.ADMIN_CUSTOMERS,    icon: Contact },
-  { label: "Inventory Report", href: "/reports/inventory",      icon: Box },
-  { label: "Settings",         href: "/settings",               icon: Settings },
+  { label: "Review Moderation", href: ROUTES.ADMIN_REVIEW_MODERATION, icon: Star },
+  { label: "Inventory Report", href: ROUTES.ADMIN_INVENTORY_REPORT, icon: Box },
+  { label: "Settings",         href: ROUTES.ADMIN_SETTINGS,         icon: Settings },
 ];
 
 export default function AdminSidebar() {

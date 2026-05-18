@@ -4,12 +4,20 @@ import type { ApiResponse } from "@/types";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-export interface FinancialReport {
+export interface TopSellingPart {
+  partId: string;
+  partName: string;
+  totalQuantitySold: number;
   totalRevenue: number;
-  totalExpenses: number;
+}
+
+export interface FinancialReport {
+  period: string;
+  totalSales: number;
+  totalPurchases: number;
   netProfit: number;
   monthlySales: { month: string; revenue: number; expenses: number }[];
-  topSellingParts: { partName: string; quantity: number; revenue: number }[];
+  topSellingParts: TopSellingPart[];
 }
 
 export interface TopSpender {
@@ -20,8 +28,11 @@ export interface TopSpender {
 
 export interface RegularCustomer {
   customerId: string;
-  name: string;
-  purchaseCount: number;
+  name?: string;
+  customerName?: string;
+  purchaseCount?: number;
+  invoiceCount?: number;
+  totalSpent?: number;
 }
 
 export interface OverdueCredit {
@@ -46,21 +57,35 @@ export const useFinancialReport = (period: "daily" | "monthly" | "yearly" = "mon
       });
       return res.data.data;
     },
+    retry: false,
   });
 
 /**
  * Top spending customers
  * GET /api/reports/customers/top-spenders?top=10
  */
+type TopSpenderApi = {
+  customerId: string;
+  customerName?: string;
+  name?: string;
+  totalSpent: number;
+};
+
+const mapTopSpender = (c: TopSpenderApi): TopSpender => ({
+  customerId: c.customerId,
+  name: c.customerName ?? c.name ?? "Unknown",
+  totalSpent: c.totalSpent,
+});
+
 export const useTopSpenders = (top = 10) =>
   useQuery({
     queryKey: ["reports", "customers", "top-spenders", top],
     queryFn: async () => {
-      const res = await api.get<ApiResponse<TopSpender[]>>(
+      const res = await api.get<ApiResponse<TopSpenderApi[]>>(
         "/reports/customers/top-spenders",
         { params: { top } }
       );
-      return res.data.data;
+      return (res.data.data ?? []).map(mapTopSpender);
     },
   });
 
@@ -102,12 +127,17 @@ export const useCustomerReport = () =>
     queryKey: ["reports", "customers", "combined"],
     queryFn: async () => {
       const [topRes, regRes] = await Promise.all([
-        api.get<ApiResponse<TopSpender[]>>("/reports/customers/top-spenders", { params: { top: 10 } }),
+        api.get<ApiResponse<TopSpenderApi[]>>("/reports/customers/top-spenders", { params: { top: 10 } }),
         api.get<ApiResponse<RegularCustomer[]>>("/reports/customers/regulars"),
       ]);
       return {
-        topCustomers: topRes.data.data ?? [],
-        regularCustomers: regRes.data.data ?? [],
+        topCustomers: (topRes.data.data ?? []).map(mapTopSpender),
+        regularCustomers: (regRes.data.data ?? []).map((c) => ({
+          customerId: c.customerId,
+          name: c.customerName ?? c.name ?? "Customer",
+          purchaseCount: c.invoiceCount ?? c.purchaseCount ?? 0,
+          totalSpent: c.totalSpent,
+        })),
         totalCustomers: undefined as number | undefined,
         newCustomersThisMonth: undefined as number | undefined,
       };

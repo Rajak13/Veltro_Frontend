@@ -5,7 +5,9 @@
 // Branch: feature/sales-invoices
 // API endpoints: GET/POST /api/invoices/sales
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import ListFilters from "@/components/filters/ListFilters";
+import { filterByDateRange, filterBySearch } from "@/lib/invoices";
 import PageHeader from "@/components/layout/PageHeader";
 import Button from "@/components/ui/Button";
 import Table from "@/components/ui/Table";
@@ -20,8 +22,30 @@ export default function SalesInvoicesPage() {
   const [page, setPage] = useState(1);
   const [createOpen, setCreateOpen] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState<SalesInvoice | null>(null);
+  const [search, setSearch] = useState("");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+  const [payStatus, setPayStatus] = useState("");
 
   const { data, isLoading } = useSalesInvoices(page);
+
+  const filteredRows = useMemo(() => {
+    let rows = (data?.data ?? []) as unknown as Record<string, unknown>[];
+    rows = filterByDateRange(
+      rows.map((r) => ({
+        ...r,
+        createdAt: String(r.saleDate ?? r.createdAt ?? ""),
+      })),
+      fromDate,
+      toDate
+    );
+    if (payStatus === "paid") rows = rows.filter((r) => Boolean(r.isPaid));
+    if (payStatus === "unpaid") rows = rows.filter((r) => !r.isPaid);
+    rows = filterBySearch(rows, search, (r) =>
+      `${r.invoiceId ?? ""} ${r.customerName ?? ""} ${r.customerEmail ?? ""}`
+    );
+    return rows;
+  }, [data?.data, fromDate, toDate, payStatus, search]);
 
   return (
     <div>
@@ -34,6 +58,31 @@ export default function SalesInvoicesPage() {
             <Plus className="w-4 h-4" /> New Invoice
           </Button>
         }
+      />
+
+      <ListFilters
+        search={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="Search customer, email, invoice #…"
+        showDateRange
+        fromDate={fromDate}
+        toDate={toDate}
+        onFromDateChange={setFromDate}
+        onToDateChange={setToDate}
+        status={payStatus}
+        onStatusChange={setPayStatus}
+        statusLabel="Payment"
+        statusOptions={[
+          { value: "", label: "All" },
+          { value: "paid", label: "Paid" },
+          { value: "unpaid", label: "Unpaid" },
+        ]}
+        onClear={() => {
+          setSearch("");
+          setFromDate("");
+          setToDate("");
+          setPayStatus("");
+        }}
       />
 
       <div className="bg-white border border-zinc-200 rounded-2xl shadow-sm overflow-hidden">
@@ -54,9 +103,10 @@ export default function SalesInvoicesPage() {
               render: (r) => (
                 <div>
                   <p className="font-medium text-zinc-800">
-                    {String(r.customerName ?? (r.customer as Record<string, unknown>)?.user
-                      ? ((r.customer as Record<string, unknown>).user as Record<string, unknown>)?.name
-                      : "—")}
+                    {String(r.customerName ?? 
+                      (r.customer && typeof r.customer === 'object' && 'user' in r.customer && r.customer.user && typeof r.customer.user === 'object' && 'name' in r.customer.user
+                        ? r.customer.user.name
+                        : "—"))}
                   </p>
                   {r.customerEmail ? (
                     <p className="text-xs text-zinc-400">{String(r.customerEmail)}</p>
@@ -143,7 +193,7 @@ export default function SalesInvoicesPage() {
               ),
             },
           ]}
-          data={(data?.data ?? []) as unknown as Record<string, unknown>[]}
+          data={filteredRows}
           isLoading={isLoading}
           page={page}
           totalPages={data?.totalPages}

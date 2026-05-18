@@ -3,7 +3,9 @@
 // Feature: Purchase Invoice Management (Admin)
 // API endpoints: GET /api/invoices/purchase, POST /api/invoices/purchase, GET /api/invoices/purchase/{id}
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import ListFilters from "@/components/filters/ListFilters";
+import { filterByDateRange, filterBySearch } from "@/lib/invoices";
 import { usePurchaseInvoices, useCreatePurchaseInvoice } from "@/hooks/useInvoices";
 import { useVendors } from "@/hooks/useVendors";
 import { useParts } from "@/hooks/useParts";
@@ -37,6 +39,21 @@ export default function PurchaseInvoicesPage() {
   
   const [modalOpen, setModalOpen] = useState(false);
   const [viewInvoice, setViewInvoice] = useState<PurchaseInvoice | null>(null);
+  const [search, setSearch] = useState("");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+
+  const filteredInvoices = useMemo(() => {
+    let rows = (data?.data ?? []) as (PurchaseInvoice & { purchaseDate?: string })[];
+    rows = filterByDateRange(
+      rows.map((r) => ({ ...r, createdAt: r.purchaseDate ?? r.createdAt ?? "" })),
+      fromDate,
+      toDate
+    );
+    return filterBySearch(rows, search, (r) =>
+      `${r.invoiceId ?? ""} ${r.vendorName ?? ""} ${r.notes ?? ""}`
+    );
+  }, [data?.data, fromDate, toDate, search]);
 
   const createMutation = useCreatePurchaseInvoice();
 
@@ -80,7 +97,7 @@ export default function PurchaseInvoicesPage() {
         toast.error("Please add at least one item");
         return;
       }
-      await createMutation.mutateAsync(formData);
+      await createMutation.mutateAsync(formData as unknown as Partial<PurchaseInvoice>);
       toast.success("Purchase invoice created successfully");
       setModalOpen(false);
       reset();
@@ -242,11 +259,27 @@ export default function PurchaseInvoicesPage() {
         </div>
       </div>
 
+      <ListFilters
+        search={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="Search vendor, invoice #, notes…"
+        showDateRange
+        fromDate={fromDate}
+        toDate={toDate}
+        onFromDateChange={setFromDate}
+        onToDateChange={setToDate}
+        onClear={() => {
+          setSearch("");
+          setFromDate("");
+          setToDate("");
+        }}
+      />
+
       {/* Table */}
       <div className="bg-white border border-zinc-200 rounded-xl shadow-sm p-6">
         <Table
           columns={columns}
-          data={data?.data ?? []}
+          data={filteredInvoices}
           isLoading={isLoading}
           emptyMessage="No purchase invoices found. Create your first invoice to get started."
           page={page}

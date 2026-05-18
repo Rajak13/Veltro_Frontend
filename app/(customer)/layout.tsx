@@ -5,8 +5,8 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import CustomerSidebar from "@/components/layout/CustomerSidebar";
 import Spinner from "@/components/ui/Spinner";
+import NotificationBell from "@/components/ui/NotificationBell";
 import { ROLES } from "@/constants/roles";
-import { Bell } from "lucide-react";
 
 export default function CustomerLayout({ children }: { children: React.ReactNode }) {
   const { role, isAuthenticated, user } = useAuth();
@@ -37,10 +37,7 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
         <header className="h-14 min-h-14 bg-white border-b border-zinc-200 flex items-center px-5 gap-3 z-30">
           <div className="flex-1" />
           <div className="flex items-center gap-2">
-            <button className="w-8 h-8 rounded-md border-[1.5px] border-zinc-200 bg-white flex items-center justify-center text-zinc-500 hover:bg-zinc-50 hover:border-zinc-300 transition-all relative">
-              <Bell className="w-3.5 h-3.5" />
-              <span className="absolute top-0.5 right-0.5 w-1.5 h-1.5 bg-orange-500 rounded-full border-[1.5px] border-white" />
-            </button>
+            <NotificationBell />
             <div className="w-7 h-7 rounded-md overflow-hidden border border-zinc-200 cursor-pointer bg-zinc-200 flex items-center justify-center text-xs font-bold text-zinc-500">
               {user?.name?.charAt(0).toUpperCase() ?? "C"}
             </div>

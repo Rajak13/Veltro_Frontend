@@ -11,6 +11,8 @@ import { useCustomerReport } from "@/hooks/useReports";
 import { Users, TrendingUp, Star, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { ROUTES } from "@/constants/routes";
+import ExportPdfButton from "@/components/ui/ExportPdfButton";
+import { exportTopCustomersPdf } from "@/lib/exportPdf";
 
 export default function ReportsPage() {
   const { data: report, isLoading } = useCustomerReport();
@@ -21,6 +23,14 @@ export default function ReportsPage() {
         title="Customer Reports"
         subtitle="Insights on customer activity and spending"
         breadcrumb={[{ label: "Staff" }, { label: "Reports" }]}
+        action={
+          (report?.topCustomers?.length ?? 0) > 0 ? (
+            <ExportPdfButton
+              size="md"
+              onExport={() => exportTopCustomersPdf(report!.topCustomers!)}
+            />
+          ) : undefined
+        }
       />
 
       {/* TODO [Siddhartha Raj Thapa]: Implement full customer report with:
@@ -107,8 +117,7 @@ export default function ReportsPage() {
               <span className="text-[10px] text-zinc-400">3+ visits this month</span>
             </div>
             <div className="flex gap-3 flex-wrap">
-              {/* TODO [Siddhartha Raj Thapa]: Replace with real regular customers data */}
-              {(report?.topCustomers ?? []).slice(0, 3).map(c => (
+              {(report?.regularCustomers ?? []).slice(0, 6).map((c) => (
                 <Link
                   key={c.customerId}
                   href={ROUTES.STAFF_CUSTOMER_DETAIL(c.customerId)}
@@ -119,11 +128,13 @@ export default function ReportsPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="text-[11px] font-medium text-zinc-800 truncate">{c.name}</div>
-                    <div className="text-[9px] text-zinc-400 tabular-nums">Rs. {c.totalSpent.toLocaleString()} total</div>
+                    <div className="text-[9px] text-zinc-400 tabular-nums">
+                      {c.purchaseCount ?? 0} purchases
+                    </div>
                   </div>
                 </Link>
               ))}
-              {(report?.topCustomers ?? []).length === 0 && (
+              {(report?.regularCustomers ?? []).length === 0 && (
                 <p className="text-xs text-zinc-300 py-2">No data yet</p>
               )}
             </div>

@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { normalizeStatusLabel } from "@/lib/status";
 
 type BadgeVariant =
   | "default"
@@ -24,9 +25,10 @@ const variants: Record<BadgeVariant, string> = {
 };
 
 // Auto-map common status strings to variants
-export function statusVariant(status: string | undefined | null): BadgeVariant {
-  if (!status) return "neutral";
-  const s = status.toLowerCase();
+export function statusVariant(status: unknown): BadgeVariant {
+  const label = normalizeStatusLabel(status);
+  if (!label || label === "Unknown") return "neutral";
+  const s = label.toLowerCase();
   if (["completed", "confirmed", "received", "sourced"].includes(s)) return "success";
   if (["pending"].includes(s)) return "warning";
   if (["cancelled", "unavailable"].includes(s)) return "danger";

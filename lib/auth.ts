@@ -42,6 +42,17 @@ export const login = async (payload: LoginPayload): Promise<AuthData> => {
   return normalise(res.data.data);
 };
 
+/** Step 1 — sends a 6-digit OTP to the email address */
+export const sendOtp = async (email: string): Promise<void> => {
+  await api.post("/auth/send-otp", { email });
+};
+
+/** Step 2 — verifies the OTP; throws if invalid/expired */
+export const verifyOtp = async (email: string, otp: string): Promise<void> => {
+  await api.post("/auth/verify-otp", { email, otp });
+};
+
+/** Step 3 — creates the account (call only after verifyOtp succeeds) */
 export const register = async (payload: RegisterPayload): Promise<AuthData> => {
   const res = await api.post<ApiResponse<BackendAuthResponse>>("/auth/register", payload);
   return normalise(res.data.data);

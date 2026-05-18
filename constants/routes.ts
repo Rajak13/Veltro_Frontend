@@ -11,14 +11,20 @@ export const ROUTES = {
   ADMIN_PURCHASE_INVOICES: "/purchase-invoices",
   ADMIN_VENDORS: "/vendors",
   ADMIN_CUSTOMERS: "/admin-customers",
+  ADMIN_CUSTOMER_DETAIL: (id: number | string) => `/admin-customers/${id}`,
+  ADMIN_INVENTORY_REPORT: "/reports/inventory",
+  ADMIN_SETTINGS: "/settings",
+  ADMIN_REVIEW_MODERATION: "/review-moderation",
 
   // Staff
   STAFF_DASHBOARD: "/staff-dashboard",
   STAFF_CUSTOMERS: "/customers",
   STAFF_CUSTOMER_DETAIL: (id: number | string) => `/customers/${id}`,
-  STAFF_SALES_INVOICES: "/sales-invoices",
+  STAFF_SALES_INVOICES: "/staff-sales-invoices",
   STAFF_SEARCH: "/search",
-  STAFF_REPORTS: "/reports",
+  STAFF_REPORTS: "/staff-reports",
+  STAFF_PART_REQUESTS: "/staff-part-requests",
+  STAFF_APPOINTMENTS: "/staff-appointments",
 
   // Customer
   CUSTOMER_DASHBOARD: "/customer/dashboard",

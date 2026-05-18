@@ -15,13 +15,16 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// On 401 — logout and redirect to login
+// On 401 — logout and redirect to login, but only if the user had an active session.
+// Skipping the redirect when there's no token prevents the login page from
+// reloading itself when the user enters wrong credentials.
 api.interceptors.response.use(
   (res) => res,
   (error) => {
     if (error.response?.status === 401) {
+      const hadSession = !!useAuthStore.getState().token;
       useAuthStore.getState().logout();
-      if (typeof window !== "undefined") {
+      if (hadSession && typeof window !== "undefined") {
         window.location.href = "/login";
       }
     }

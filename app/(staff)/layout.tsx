@@ -5,8 +5,9 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import StaffSidebar from "@/components/layout/StaffSidebar";
 import Spinner from "@/components/ui/Spinner";
+import NotificationBell from "@/components/ui/NotificationBell";
 import { ROLES } from "@/constants/roles";
-import { Bell, Search } from "lucide-react";
+import { Search } from "lucide-react";
 
 export default function StaffLayout({ children }: { children: React.ReactNode }) {
   const { role, isAuthenticated, user } = useAuth();
@@ -46,10 +47,7 @@ export default function StaffLayout({ children }: { children: React.ReactNode })
           </div>
 
           <div className="flex items-center gap-2 ml-auto">
-            <button className="w-8 h-8 rounded-md border-[1.5px] border-zinc-200 bg-white flex items-center justify-center text-zinc-500 hover:bg-zinc-50 hover:border-zinc-300 transition-all relative">
-              <Bell className="w-3.5 h-3.5" />
-              <span className="absolute top-0.5 right-0.5 w-1.5 h-1.5 bg-orange-500 rounded-full border-[1.5px] border-white" />
-            </button>
+            <NotificationBell />
             <div className="w-7 h-7 rounded-md overflow-hidden border border-zinc-200 ml-1 cursor-pointer bg-zinc-200 flex items-center justify-center text-xs font-bold text-zinc-500">
               {user?.name?.charAt(0).toUpperCase() ?? "S"}
             </div>

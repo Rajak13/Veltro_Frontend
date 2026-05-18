@@ -5,17 +5,20 @@
 // Branch: feature/financial-dashboard
 // API endpoints: GET /api/reports/financial, GET /api/reports/customers
 
-import { useFinancialReport } from "@/hooks/useReports";
+import { useFinancialReport, useTopSpenders } from "@/hooks/useReports";
 import { useParts } from "@/hooks/useParts";
 import {
   TrendingUp, TrendingDown, Package, Users, FileText,
-  Plus, FilePlus, UserPlus, Download, ArrowRight, AlertTriangle,
+  Plus, FilePlus, UserPlus, ArrowRight, AlertTriangle,
 } from "lucide-react";
 import Link from "next/link";
 import { ROUTES } from "@/constants/routes";
+import ExportPdfButton from "@/components/ui/ExportPdfButton";
+import { exportDashboardPdf } from "@/lib/exportPdf";
 
 export default function AdminDashboardPage() {
-  const { data: report, isLoading } = useFinancialReport();
+  const { data: report, isLoading, isError: reportError } = useFinancialReport();
+  const { data: topCustomers, isLoading: loadingTopCustomers } = useTopSpenders(5);
   const { data: partsData } = useParts(1, 100);
 
   const lowStockParts = Array.isArray(partsData?.data) 
@@ -36,13 +39,15 @@ export default function AdminDashboardPage() {
 
   const monthlySales = report?.monthlySales ?? [];
   const maxRevenue = Math.max(...monthlySales.map((m) => m.revenue), 1);
+  const netProfit =
+    report?.netProfit ?? (report ? report.totalSales - report.totalPurchases : undefined);
 
   return (
     <div>
       {/* Greeting */}
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-4 sm:mb-5">
         <div>
-          <h1 className="text-base sm:text-lg font-semibold text-zinc-900">{greeting}, {report ? "Admin" : "..."}</h1>
+          <h1 className="text-base sm:text-lg font-semibold text-zinc-900">{greeting}, Admin</h1>
           <p className="text-[10px] sm:text-xs text-zinc-400 mt-0.5">{dateStr}</p>
         </div>
         <div className="flex gap-1.5 flex-wrap">
@@ -55,11 +60,27 @@ export default function AdminDashboardPage() {
           <Link href={ROUTES.ADMIN_STAFF + "?action=new"} className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium border-[1.5px] border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 transition-all">
             <UserPlus className="w-3 h-3 text-orange-500" />Staff
           </Link>
-          <button className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium border-[1.5px] border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 transition-all">
-            <Download className="w-3 h-3" />Export
-          </button>
+          {report && (
+            <ExportPdfButton
+              className="hidden md:inline-flex"
+              label="Export PDF"
+              onExport={() =>
+                exportDashboardPdf(
+                  report,
+                  topCustomers ?? [],
+                  lowStockParts.map((p) => ({ name: p.name, stockQuantity: p.stockQuantity }))
+                )
+              }
+            />
+          )}
         </div>
       </div>
+
+      {reportError && (
+        <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          Could not load financial summary. Restart the backend and refresh this page.
+        </div>
+      )}
 
       {/* Hero card */}
       <div className="relative rounded-xl sm:rounded-2xl overflow-hidden mb-3 sm:mb-4 p-4 sm:p-5" style={{ background: "#18181b", border: "1px solid #27272a" }}>
@@ -71,7 +92,7 @@ export default function AdminDashboardPage() {
               <p className="text-[9px] sm:text-[10px] text-zinc-500 font-medium mb-1">Monthly Revenue</p>
               <div className="flex items-baseline gap-2 sm:gap-3">
                 <span className="text-2xl sm:text-3xl font-semibold text-white tabular-nums">
-                  Rs. {report?.totalRevenue?.toLocaleString() ?? "—"}
+                  Rs. {report?.totalSales?.toLocaleString() ?? "—"}
                 </span>
                 <span className="text-[11px] sm:text-xs font-medium text-orange-400 flex items-center gap-0.5">
                   <TrendingUp className="w-2.5 h-2.5 sm:w-3 sm:h-3" />12.5%
@@ -96,10 +117,10 @@ export default function AdminDashboardPage() {
           {/* Mini stats */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-2.5">
             {[
-              { label: "Total Revenue", value: `Rs. ${report?.totalRevenue?.toLocaleString() ?? "—"}` },
-              { label: "Expenses",      value: `Rs. ${report?.totalExpenses?.toLocaleString() ?? "—"}` },
-              { label: "Net Profit",    value: `Rs. ${report?.netProfit?.toLocaleString() ?? "—"}` },
-              { label: "Parts Sold",    value: report?.topSellingParts?.reduce((a, p) => a + p.quantity, 0)?.toLocaleString() ?? "—" },
+              { label: "Total Revenue", value: `Rs. ${report?.totalSales?.toLocaleString() ?? "—"}` },
+              { label: "Expenses",      value: `Rs. ${report?.totalPurchases?.toLocaleString() ?? "—"}` },
+              { label: "Net Profit",    value: netProfit != null ? `Rs. ${netProfit.toLocaleString()}` : "—" },
+              { label: "Parts Sold",    value: report?.topSellingParts?.reduce((a, p) => a + p.totalQuantitySold, 0)?.toLocaleString() ?? "—" },
             ].map(({ label, value }) => (
               <div key={label} className="rounded-md sm:rounded-lg p-2 sm:p-2.5 transition-colors" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
                 <p className="text-[8px] sm:text-[9px] text-zinc-500 mb-0.5">{label}</p>
@@ -123,11 +144,15 @@ export default function AdminDashboardPage() {
           ) : monthlySales.length > 0 ? (
             <div className="flex items-end gap-2 h-44">
               {monthlySales.slice(-7).map((m, i, arr) => {
-                const heightPct = (m.revenue / maxRevenue) * 100;
+                const chartHeight = 140;
+                const barHeight = Math.max(
+                  (m.revenue / maxRevenue) * chartHeight,
+                  m.revenue > 0 ? 8 : 4
+                );
                 const isLast = i === arr.length - 1;
                 return (
-                  <div key={m.month} className="flex-1 flex flex-col items-center gap-1">
-                    <div className="w-full rounded-t-md transition-all hover:brightness-110 cursor-pointer" style={{ height: `${Math.max(heightPct, 4)}%`, background: isLast ? "#f97316" : `rgba(249,115,22,${0.3 + (i / arr.length) * 0.5})` }} title={`Rs. ${m.revenue.toLocaleString()}`} />
+                  <div key={`${m.month}-${i}`} className="flex-1 flex flex-col items-center justify-end gap-1 h-full">
+                    <div className="w-full rounded-t-md transition-all hover:brightness-110 cursor-pointer" style={{ height: barHeight, background: isLast ? "#f97316" : `rgba(249,115,22,${0.35 + (i / arr.length) * 0.45})` }} title={`Rs. ${m.revenue.toLocaleString()}`} />
                     <span className={`text-[9px] ${isLast ? "font-semibold text-zinc-700" : "text-zinc-400"}`}>{m.month.slice(0, 3)}</span>
                   </div>
                 );
@@ -148,7 +173,7 @@ export default function AdminDashboardPage() {
             ) : (report?.topSellingParts ?? []).length > 0 ? (
               <div className="space-y-2.5">
                 {(report?.topSellingParts ?? []).slice(0, 4).map((p, i) => {
-                  const maxQty = Math.max(...(report?.topSellingParts ?? []).map(x => x.quantity), 1);
+                  const maxQty = Math.max(...(report?.topSellingParts ?? []).map(x => x.totalQuantitySold), 1);
                   const colors = ["bg-orange-500", "bg-orange-400", "bg-orange-300", "bg-orange-200"];
                   return (
                     <div key={p.partName} className="flex items-center gap-2.5">
@@ -156,10 +181,10 @@ export default function AdminDashboardPage() {
                       <div className="flex-1 min-w-0">
                         <div className="text-[11px] font-medium text-zinc-700 truncate">{p.partName}</div>
                         <div className="h-[3px] rounded-full bg-zinc-100 mt-1">
-                          <div className={`h-full rounded-full ${colors[i] ?? "bg-orange-200"}`} style={{ width: `${(p.quantity / maxQty) * 100}%` }} />
+                          <div className={`h-full rounded-full ${colors[i] ?? "bg-orange-200"}`} style={{ width: `${(p.totalQuantitySold / maxQty) * 100}%` }} />
                         </div>
                       </div>
-                      <span className="text-[11px] font-semibold text-zinc-900 tabular-nums">{p.quantity}</span>
+                      <span className="text-[11px] font-semibold text-zinc-900 tabular-nums">{p.totalQuantitySold}</span>
                     </div>
                   );
                 })}
@@ -180,7 +205,7 @@ export default function AdminDashboardPage() {
               <h3 className="text-sm font-semibold text-zinc-900">Top Customers</h3>
               <p className="text-[10px] text-zinc-400 mt-0.5">By total spend</p>
             </div>
-            <Link href={ROUTES.STAFF_CUSTOMERS} className="text-[11px] text-orange-600 hover:text-orange-700 font-medium flex items-center gap-0.5 transition-colors">
+            <Link href={ROUTES.ADMIN_CUSTOMERS} className="text-[11px] text-orange-600 hover:text-orange-700 font-medium flex items-center gap-0.5 transition-colors">
               View All<ArrowRight className="w-3 h-3" />
             </Link>
           </div>
@@ -188,23 +213,22 @@ export default function AdminDashboardPage() {
             <table className="w-full border-collapse">
               <thead>
                 <tr>
-                  {["#", "Customer", "Total Spent", "Revenue"].map(h => (
+                  {["#", "Customer", "Total Spent"].map(h => (
                     <th key={h} className="px-5 py-2 text-left text-[10px] font-semibold text-zinc-400 uppercase tracking-wider border-b border-zinc-100">{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {isLoading ? (
-                  <tr><td colSpan={4} className="px-5 py-8 text-center text-xs text-zinc-300">Loading...</td></tr>
-                ) : (report?.topSellingParts ?? []).length === 0 ? (
-                  <tr><td colSpan={4} className="px-5 py-8 text-center text-xs text-zinc-300">No data yet</td></tr>
+                {isLoading || loadingTopCustomers ? (
+                  <tr><td colSpan={3} className="px-5 py-8 text-center text-xs text-zinc-300">Loading...</td></tr>
+                ) : (topCustomers ?? []).length === 0 ? (
+                  <tr><td colSpan={3} className="px-5 py-8 text-center text-xs text-zinc-300">No data yet</td></tr>
                 ) : (
-                  (report?.topSellingParts ?? []).slice(0, 5).map((p, i) => (
-                    <tr key={p.partName} className="hover:bg-zinc-50 transition-colors">
+                  (topCustomers ?? []).slice(0, 5).map((c, i) => (
+                    <tr key={c.customerId} className="hover:bg-zinc-50 transition-colors">
                       <td className="px-5 py-2.5 text-[11px] text-zinc-400 tabular-nums border-b border-zinc-50">{i + 1}</td>
-                      <td className="px-5 py-2.5 text-[13px] font-medium text-zinc-700 border-b border-zinc-50">{p.partName}</td>
-                      <td className="px-5 py-2.5 text-[13px] text-zinc-600 tabular-nums border-b border-zinc-50">{p.quantity} units</td>
-                      <td className="px-5 py-2.5 text-[13px] font-medium text-zinc-700 tabular-nums border-b border-zinc-50">Rs. {p.revenue.toLocaleString()}</td>
+                      <td className="px-5 py-2.5 text-[13px] font-medium text-zinc-700 border-b border-zinc-50">{c.name}</td>
+                      <td className="px-5 py-2.5 text-[13px] font-semibold text-zinc-900 tabular-nums border-b border-zinc-50">Rs. {c.totalSpent.toLocaleString()}</td>
                     </tr>
                   ))
                 )}
@@ -230,7 +254,7 @@ export default function AdminDashboardPage() {
               {lowStockParts.length === 0 ? (
                 <p className="text-xs text-zinc-300 py-2 text-center">All stock levels OK</p>
               ) : lowStockParts.map((p) => (
-                <div key={p.id} className="flex items-center justify-between p-2 rounded-md bg-orange-50 border border-orange-100">
+                <div key={p.partId} className="flex items-center justify-between p-2 rounded-md bg-orange-50 border border-orange-100">
                   <div className="flex items-center gap-2">
                     <Package className="w-3 h-3 text-orange-500" />
                     <span className="text-[11px] font-medium text-zinc-700">{p.name}</span>
@@ -246,9 +270,9 @@ export default function AdminDashboardPage() {
             <h3 className="text-sm font-semibold text-zinc-900 mb-3">Summary</h3>
             <div className="space-y-3">
               {[
-                { label: "Total Revenue",  value: `Rs. ${report?.totalRevenue?.toLocaleString() ?? "—"}`,  icon: TrendingUp,   color: "text-green-500",  bg: "bg-green-50" },
-                { label: "Total Expenses", value: `Rs. ${report?.totalExpenses?.toLocaleString() ?? "—"}`, icon: TrendingDown, color: "text-red-500",    bg: "bg-red-50" },
-                { label: "Net Profit",     value: `Rs. ${report?.netProfit?.toLocaleString() ?? "—"}`,     icon: FileText,    color: "text-orange-500", bg: "bg-orange-50" },
+                { label: "Total Revenue",  value: `Rs. ${report?.totalSales?.toLocaleString() ?? "—"}`,      icon: TrendingUp,   color: "text-green-500",  bg: "bg-green-50" },
+                { label: "Total Expenses", value: `Rs. ${report?.totalPurchases?.toLocaleString() ?? "—"}`,   icon: TrendingDown, color: "text-red-500",    bg: "bg-red-50" },
+                { label: "Net Profit",     value: netProfit != null ? `Rs. ${netProfit.toLocaleString()}` : "—", icon: FileText,    color: "text-orange-500", bg: "bg-orange-50" },
                 { label: "Low Stock Items",value: `${lowStockParts.length} parts`,                          icon: AlertTriangle, color: "text-amber-500", bg: "bg-amber-50" },
               ].map(({ label, value, icon: Icon, color, bg }) => (
                 <div key={label} className="flex items-center gap-3">
