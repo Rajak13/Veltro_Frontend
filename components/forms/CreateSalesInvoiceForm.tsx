@@ -123,7 +123,7 @@ export default function CreateSalesInvoiceForm({ onSuccess }: Props) {
                       key={c.customerId}
                       type="button"
                       onClick={() => {
-                        setSelectedCustomer({ id: c.customerId, name: c.user?.name ?? "Unknown" });
+                        setSelectedCustomer({ id: c.customerId, name: c.fullName ?? "Unknown" });
                         setValue("customerId", c.customerId);
                         setCustomerSearch("");
                       }}
@@ -131,7 +131,7 @@ export default function CreateSalesInvoiceForm({ onSuccess }: Props) {
                     >
                       <User className="w-4 h-4 text-zinc-400" />
                       <div className="flex-1">
-                        <p className="text-sm font-medium text-zinc-800">{c.user?.name}</p>
+                        <p className="text-sm font-medium text-zinc-800">{c.fullName}</p>
                         <p className="text-xs text-zinc-500">{c.phone}</p>
                       </div>
                     </button>

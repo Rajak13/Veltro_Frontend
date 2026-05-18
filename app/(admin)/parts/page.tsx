@@ -3,7 +3,9 @@
 // Feature: Parts Management (Admin)
 // API endpoints: GET /api/parts, POST /api/parts, PUT /api/parts/{id}, DELETE /api/parts/{id}
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import ListFilters from "@/components/filters/ListFilters";
+import { filterBySearch } from "@/lib/invoices";
 import { useParts, useCreatePart, useUpdatePart, useDeletePart } from "@/hooks/useParts";
 import { useVendors } from "@/hooks/useVendors";
 import { Plus, Pencil, Trash2, Package, AlertTriangle, TrendingUp, DollarSign } from "lucide-react";
@@ -35,6 +37,7 @@ export default function PartsPage() {
   const [editingPart, setEditingPart] = useState<Part | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [filterLowStock, setFilterLowStock] = useState(false);
+  const [search, setSearch] = useState("");
 
   const createMutation = useCreatePart();
   const updateMutation = useUpdatePart();
@@ -97,9 +100,13 @@ export default function PartsPage() {
     }
   };
 
-  const filteredData = filterLowStock 
-    ? data?.data?.filter((p) => p.isLowStock) ?? []
-    : data?.data ?? [];
+  const filteredData = useMemo(() => {
+    let rows = data?.data ?? [];
+    if (filterLowStock) rows = rows.filter((p) => p.isLowStock);
+    return filterBySearch(rows, search, (p) =>
+      `${p.name} ${p.description ?? ""} ${p.vendorName ?? ""}`
+    );
+  }, [data?.data, filterLowStock, search]);
 
   const lowStockCount = data?.data?.filter((p) => p.isLowStock).length ?? 0;
   const totalValue = data?.data?.reduce((sum, p) => sum + (p.price * p.stockQuantity), 0) ?? 0;
@@ -279,6 +286,14 @@ export default function PartsPage() {
           </div>
         </div>
       </div>
+
+      <ListFilters
+        search={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="Search part name, vendor, description…"
+        onClear={() => setSearch("")}
+        className="mb-2"
+      />
 
       {/* Filters */}
       <div className="flex items-center gap-3 mb-4">

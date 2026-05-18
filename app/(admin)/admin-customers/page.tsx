@@ -113,7 +113,7 @@ export default function AdminCustomersPage() {
               key: "actions",
               header: "Actions",
               render: (r) => (
-                <Link href={ROUTES.STAFF_CUSTOMER_DETAIL(String((r as { customerId?: string }).customerId ?? ""))}>
+                <Link href={ROUTES.ADMIN_CUSTOMER_DETAIL(String((r as { customerId?: string }).customerId ?? ""))}>
                   <Button variant="outline" size="sm">
                     <Eye className="w-3.5 h-3.5" /> View
                   </Button>

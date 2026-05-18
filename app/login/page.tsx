@@ -7,42 +7,40 @@ import {
   Cog, Mail, Lock, Eye, EyeOff,
   Brain, CalendarCheck, History, Gift, ShieldCheck, Bell, Percent,
 } from "lucide-react";
+import toast from "react-hot-toast";
 import { login } from "@/lib/auth";
 import { useAuthStore } from "@/store/authStore";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null);
   const { setAuth } = useAuthStore();
   const router = useRouter();
 
-  function showToast(msg: string, type: "success" | "error" = "success") {
-    setToast({ msg, type });
-    setTimeout(() => setToast(null), 3500);
-  }
-
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    // Capture form ref immediately — e.currentTarget is nullified after any await
+    const form = e.currentTarget;
+    const email = (form.elements.namedItem("email") as HTMLInputElement).value;
+    const password = (form.elements.namedItem("password") as HTMLInputElement).value;
     setLoading(true);
     try {
-      const form = e.currentTarget;
-      const email = (form.elements.namedItem("email") as HTMLInputElement).value;
-      const password = (form.elements.namedItem("password") as HTMLInputElement).value;
       const data = await login({ email, password });
       // Map backend response to User shape expected by the store
       setAuth(
         { id: 0, name: data.user.name, email: data.user.email, role: data.user.role as "Admin" | "Staff" | "Customer", createdAt: new Date().toISOString() },
-        data.token
+        data.token,
+        rememberMe,
       );
-      showToast("Welcome back! Redirecting…");
+      toast.success("Welcome back! Redirecting…");
       setTimeout(() => {
         if (data.user.role === "Admin") router.push("/dashboard");
         else if (data.user.role === "Staff") router.push("/staff-dashboard");
         else router.push("/customer/dashboard");
       }, 800);
     } catch {
-      showToast("Invalid email or password.", "error");
+      toast.error("Invalid credentials. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -50,15 +48,6 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex bg-[#fafafa]" style={{ fontFamily: "var(--font-inter, 'Inter', sans-serif)" }}>
-
-      {/* Toast */}
-      {toast && (
-        <div className={`fixed top-6 right-6 z-50 flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm font-medium shadow-lg border
-          ${toast.type === "success" ? "bg-green-50 border-green-200 text-green-800" : "bg-red-50 border-red-200 text-red-700"}`}>
-          <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${toast.type === "success" ? "bg-green-500" : "bg-red-500"}`} />
-          {toast.msg}
-        </div>
-      )}
 
       {/* ════ LEFT — form ════ */}
       <div className="w-full lg:w-[45%] flex items-center justify-center p-6 md:p-10">
@@ -81,7 +70,7 @@ export default function LoginPage() {
           <div className="bg-white border border-zinc-200 rounded-2xl p-7 shadow-sm relative overflow-hidden">
             <div className="absolute top-0 left-6 right-6 h-[3px] bg-orange-500 rounded-b-full" />
 
-            <form onSubmit={handleSubmit} className="mt-2">
+            <form onSubmit={handleSubmit} noValidate className="mt-2">
               {/* Email */}
               <div className="relative mb-4">
                 <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 pointer-events-none" />
@@ -113,7 +102,12 @@ export default function LoginPage() {
               {/* Remember / Forgot */}
               <div className="flex items-center justify-between mb-6">
                 <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" className="w-4 h-4 rounded border-zinc-300 accent-orange-500 cursor-pointer" />
+                  <input
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    className="w-4 h-4 rounded border-zinc-300 accent-orange-500 cursor-pointer"
+                  />
                   <span className="text-xs text-zinc-500">Remember me</span>
                 </label>
                 <a href="#" className="text-xs text-orange-600 hover:text-orange-700 font-medium transition-colors">

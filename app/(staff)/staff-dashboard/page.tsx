@@ -34,12 +34,12 @@ export default function StaffDashboardPage() {
   });
 
   const invoices = invoicesData?.data ?? [];
-  const customers = customersData?.data ?? [];
+  const customers = customersData?.items ?? [];
 
   const filteredCustomers = customers.filter(c => {
     if (!searchQuery) return true;
     const q = searchQuery.toLowerCase();
-    const name = c.user?.name?.toLowerCase() ?? "";
+    const name = c.fullName?.toLowerCase() ?? "";
     const phone = c.phone?.toLowerCase() ?? "";
     return name.includes(q) || phone.includes(q);
   });
@@ -164,24 +164,24 @@ export default function StaffDashboardPage() {
           {filteredCustomers.length === 0 ? (
             <p className="text-xs text-zinc-300 text-center py-6">No customers found</p>
           ) : (
-            filteredCustomers.slice(0, 4).map(c => (
+            filteredCustomers.slice(0, 4).map((c, idx) => (
               <Link
-                key={c.id}
-                href={ROUTES.STAFF_CUSTOMER_DETAIL(c.id)}
+                key={c.customerId || idx}
+                href={ROUTES.STAFF_CUSTOMER_DETAIL(c.customerId)}
                 className="flex items-center gap-2.5 px-3.5 py-2.5 cursor-pointer hover:bg-zinc-50 border-b border-zinc-50 last:border-b-0 transition-colors"
               >
                 <div className="w-8 h-8 rounded-md bg-zinc-100 flex items-center justify-center text-xs font-bold text-zinc-500 flex-shrink-0">
-                  {c.user?.name?.charAt(0).toUpperCase() ?? "?"}
+                  {c.fullName?.charAt(0).toUpperCase() ?? "?"}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-[11px] font-semibold text-zinc-800">{c.user?.name}</div>
+                  <div className="text-[11px] font-semibold text-zinc-800">{c.fullName}</div>
                   <div className="text-[9px] text-zinc-400 truncate">
                     {c.vehicles?.[0]?.registrationNumber && `${c.vehicles[0].registrationNumber} • `}
                     {c.phone}
                   </div>
                 </div>
                 <div className="text-right flex-shrink-0">
-                  <div className="text-[10px] font-semibold text-zinc-700 tabular-nums">{c.loyaltyPoints} pts</div>
+                  <div className="text-[10px] font-semibold text-zinc-700 tabular-nums">{c.creditBalance} pts</div>
                   <div className="text-[8px] text-zinc-400">{c.vehicles?.length ?? 0} vehicle{c.vehicles?.length !== 1 ? "s" : ""}</div>
                 </div>
                 <ChevronRight className="w-3 h-3 text-zinc-300 flex-shrink-0 ml-1" />
@@ -219,8 +219,8 @@ export default function StaffDashboardPage() {
                 ) : invoices.length === 0 ? (
                   <tr><td colSpan={6} className="px-5 py-8 text-center text-xs text-zinc-300">No sales today</td></tr>
                 ) : (
-                  invoices.map(inv => (
-                    <tr key={inv.id} className="hover:bg-zinc-50 transition-colors">
+                  invoices.map((inv, idx) => (
+                    <tr key={inv.id ?? idx} className="hover:bg-zinc-50 transition-colors">
                       <td className="px-3.5 py-2.5 text-[12px] font-medium text-zinc-700 tabular-nums border-b border-zinc-50">#{inv.id}</td>
                       <td className="px-3.5 py-2.5 text-[12px] text-zinc-600 border-b border-zinc-50">
                         {(inv.customer as { user?: { name?: string } })?.user?.name ?? "—"}
@@ -267,8 +267,8 @@ export default function StaffDashboardPage() {
               </Link>
             </div>
             <div className="space-y-0.5">
-              {(report?.topCustomers ?? []).slice(0, 5).map(c => (
-                <Link key={c.customerId} href={ROUTES.STAFF_CUSTOMER_DETAIL(c.customerId)} className="flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-zinc-50 transition-colors cursor-pointer">
+              {(report?.topCustomers ?? []).slice(0, 5).map((c, idx) => (
+                <Link key={c.customerId || idx} href={ROUTES.STAFF_CUSTOMER_DETAIL(c.customerId)} className="flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-zinc-50 transition-colors cursor-pointer">
                   <div className="w-6 h-6 rounded bg-zinc-100 flex items-center justify-center text-[10px] font-bold text-zinc-500 flex-shrink-0">
                     {c.name?.charAt(0).toUpperCase() ?? "?"}
                   </div>
@@ -306,7 +306,7 @@ export default function StaffDashboardPage() {
                 const maxSpent = Math.max(...(report?.topCustomers ?? []).map(x => x.totalSpent), 1);
                 const colors = ["bg-orange-500", "bg-orange-400", "bg-orange-300", "bg-orange-200"];
                 return (
-                  <div key={c.customerId} className="flex items-center gap-2.5">
+                  <div key={c.customerId || i} className="flex items-center gap-2.5">
                     <span className="text-[9px] font-bold text-zinc-300 w-3">{i + 1}</span>
                     <div className="flex-1 min-w-0">
                       <div className="text-[11px] font-medium text-zinc-700 truncate">{c.name}</div>
@@ -333,18 +333,18 @@ export default function StaffDashboardPage() {
           <span className="text-[10px] text-zinc-400">3+ visits this month</span>
         </div>
         <div className="flex gap-3 flex-wrap">
-          {customers.slice(0, 3).map(c => (
+          {customers.slice(0, 3).map((c, idx) => (
             <Link
-              key={c.id}
-              href={ROUTES.STAFF_CUSTOMER_DETAIL(c.id)}
+              key={c.customerId || idx}
+              href={ROUTES.STAFF_CUSTOMER_DETAIL(c.customerId)}
               className="flex-1 min-w-[180px] flex items-center gap-2.5 p-2.5 rounded-xl bg-zinc-50 border border-zinc-100 hover:border-orange-200 hover:bg-orange-50 transition-all"
             >
               <div className="w-7 h-7 rounded-md bg-zinc-200 flex items-center justify-center text-xs font-bold text-zinc-500 flex-shrink-0">
-                {c.user?.name?.charAt(0).toUpperCase() ?? "?"}
+                {c.fullName?.charAt(0).toUpperCase() ?? "?"}
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-[11px] font-medium text-zinc-800 truncate">{c.user?.name}</div>
-                <div className="text-[9px] text-zinc-400 tabular-nums truncate">{c.loyaltyPoints} pts • {c.phone}</div>
+                <div className="text-[11px] font-medium text-zinc-800 truncate">{c.fullName}</div>
+                <div className="text-[9px] text-zinc-400 tabular-nums truncate">{c.creditBalance} pts • {c.phone}</div>
               </div>
             </Link>
           ))}

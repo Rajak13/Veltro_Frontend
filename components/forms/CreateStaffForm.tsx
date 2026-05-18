@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { User, Mail, Phone, Lock, Briefcase, Eye, EyeOff, AlertCircle } from "lucide-react";
+import toast from "react-hot-toast";
 import Button from "@/components/ui/Button";
 import { useCreateStaff } from "@/hooks/useStaff";
 
@@ -42,14 +43,19 @@ export default function CreateStaffForm({ onSuccess }: Props) {
   } = useForm<FormValues>({ resolver: zodResolver(schema) });
 
   async function onSubmit(values: FormValues) {
-    await mutateAsync({
-      fullName: `${values.firstName} ${values.lastName}`.trim(),
-      email:    values.email,
-      password: values.password,
-      position: values.position,
-    });
-    reset();
-    onSuccess();
+    try {
+      await mutateAsync({
+        fullName: `${values.firstName} ${values.lastName}`.trim(),
+        email:    values.email,
+        password: values.password,
+        position: values.position,
+      });
+      toast.success("Staff member added successfully.");
+      reset();
+      onSuccess();
+    } catch {
+      toast.error("Failed to add staff member. Please try again.");
+    }
   }
 
   return (

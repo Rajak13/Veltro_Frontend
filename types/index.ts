@@ -130,9 +130,8 @@ export interface PartRequest {
 }
 
 export interface Review {
-  id: number;
-  customerId: number;
-  customer?: Customer;
+  reviewId: string;
+  customerId: string;
   rating: number;
   comment: string;
   isApproved: boolean;

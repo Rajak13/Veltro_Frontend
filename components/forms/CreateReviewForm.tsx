@@ -37,7 +37,7 @@ export default function CreateReviewForm({ onSuccess }: Props) {
   const onSubmit = async (data: FormData) => {
     try {
       await mutateAsync(data);
-      toast.success("Review submitted successfully");
+      toast.success("Review submitted — pending admin approval before it goes public");
       onSuccess?.();
     } catch {
       toast.error("Failed to submit review");

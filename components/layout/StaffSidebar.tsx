@@ -40,6 +40,7 @@ const navGroups: NavGroup[] = [
       { label: "New Sale",       href: ROUTES.STAFF_SALES_INVOICES + "?action=new" },
       { label: "Sales History",  href: ROUTES.STAFF_SALES_INVOICES },
       { label: "Create Invoice", href: ROUTES.STAFF_SALES_INVOICES + "?action=invoice" },
+      { label: "Part Requests",  href: ROUTES.STAFF_PART_REQUESTS },
     ],
   },
   {
@@ -55,7 +56,7 @@ const navGroups: NavGroup[] = [
 const singleItems: NavItem[] = [
   { label: "Dashboard",     href: ROUTES.STAFF_DASHBOARD,    icon: LayoutDashboard },
   { label: "Quick Search",  href: ROUTES.STAFF_SEARCH,       icon: Search, kbd: "⌘K" },
-  { label: "Appointments",  href: "/appointments",           icon: Calendar },
+  { label: "Appointments",  href: ROUTES.STAFF_APPOINTMENTS, icon: Calendar },
 ];
 
 export default function StaffSidebar() {

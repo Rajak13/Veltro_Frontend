@@ -6,9 +6,9 @@ import { z } from "zod";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 import { useUpdateMyProfile } from "@/hooks/useCustomers";
+import type { CustomerSearchResult } from "@/hooks/useCustomers";
 import { useAuth } from "@/hooks/useAuth";
 import toast from "react-hot-toast";
-import type { Customer } from "@/types";
 
 const schema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -19,7 +19,7 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 interface Props {
-  profile: Customer;
+  profile: CustomerSearchResult;
   onSuccess?: () => void;
 }
 
@@ -29,7 +29,7 @@ export default function EditProfileForm({ profile, onSuccess }: Props) {
   const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
-      name: profile.user?.name || user?.name || "",
+      name: profile.fullName || user?.name || "",
       phone: profile.phone || "",
       address: profile.address || "",
     },

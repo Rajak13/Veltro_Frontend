@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
 import type { Customer, ApiResponse } from "@/types";
-import type { Customer, Vehicle, ApiResponse, PaginatedResponse } from "@/types";
+import type { Vehicle } from "@/types";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -40,6 +40,8 @@ export interface CustomerSearchResult {
     model: string;
     year: number;
     registrationNumber?: string;
+    mileage: number;
+    imageUrl?: string;
   }[];
 }
 
@@ -101,12 +103,12 @@ export const useSearchCustomers = (q: string, type = "name", page = 1, pageSize 
     enabled: q.trim().length > 0,
   });
 
-/** Register a new customer (staff route) */
+/** Get the authenticated customer's own profile */
 export const useMyProfile = () =>
   useQuery({
     queryKey: ["customers", "profile"],
     queryFn: async () => {
-      const res = await api.get<ApiResponse<Customer>>("/customers/profile");
+      const res = await api.get<ApiResponse<CustomerSearchResult>>("/customers/profile");
       return res.data.data;
     },
   });
@@ -162,8 +164,8 @@ export const useUpdateVehicle = () => {
 export const useDeleteVehicle = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) =>
-      api.delete(`/customers/vehicles/${id}`).then((r) => r.data),
+    mutationFn: (vehicleId: string) =>
+      api.delete(`/customers/vehicles/${vehicleId}`).then((r) => r.data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["customers", "profile"] }),
   });
 };
