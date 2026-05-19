@@ -9,7 +9,6 @@ export const useMyPartRequests = () =>
     queryFn: async () => {
       try {
         const res = await api.get<ApiResponse<any[]>>("/part-requests/my");
-        // Map backend PascalCase to frontend camelCase
         return res.data.data.map((item: Record<string, unknown>, index: number) => {
           const rawId = item.requestId ?? item.RequestId ?? item.id ?? item.Id;
           const parsedId = rawId !== undefined && rawId !== null ? Number(rawId) : NaN;
@@ -23,13 +22,14 @@ export const useMyPartRequests = () =>
           };
         }) as PartRequest[];
       } catch (error: any) {
-        // Return empty array if endpoint doesn't exist yet
-        if (error.response?.status === 404) {
-          return [];
-        }
+        if (error.response?.status === 404) return [];
         throw error;
       }
     },
+    refetchInterval: 10_000,
+    refetchIntervalInBackground: true,
+    refetchOnWindowFocus: true,
+    staleTime: 0,
   });
 
 export interface StaffPartRequest {
@@ -37,6 +37,7 @@ export interface StaffPartRequest {
   partName: string;
   description?: string;
   status: string;
+  staffNote?: string;
   requestedAt: string;
   customerName?: string;
   customerPhone?: string;
@@ -56,8 +57,8 @@ export const useStaffPartRequests = (statusFilter?: string) =>
 export const useUpdatePartRequestStatus = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ requestId, status }: { requestId: string; status: string }) =>
-      api.put(`/part-requests/${requestId}/status`, { status }).then((r) => r.data),
+    mutationFn: ({ requestId, status, staffNote }: { requestId: string; status: string; staffNote?: string }) =>
+      api.put(`/part-requests/${requestId}/status`, { status, staffNote }).then((r) => r.data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["partRequests"] });
     },

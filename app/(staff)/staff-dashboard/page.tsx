@@ -5,19 +5,21 @@
 // Branch: feature/staff-dashboard
 // API endpoints: GET /api/reports/customers, GET /api/invoices/sales, GET /api/customers
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useCustomers } from "@/hooks/useCustomers";
 import { useSalesInvoices } from "@/hooks/useInvoices";
 import { useCustomerReport } from "@/hooks/useReports";
 import {
   TrendingUp, UserPlus, ShoppingCart, FileText,
   ArrowRight, ChevronRight, Mail, Check,
+  User, Phone, Car, Hash,
 } from "lucide-react";
 import Link from "next/link";
 import { ROUTES } from "@/constants/routes";
 
 export default function StaffDashboardPage() {
-  const { data: invoicesData, isLoading: invoicesLoading } = useSalesInvoices(1, 6);
+  // Fetch a larger page so today's sales are included
+  const { data: invoicesData, isLoading: invoicesLoading } = useSalesInvoices(1, 100);
   const { data: customersData } = useCustomers(1, 20);
   const { data: report } = useCustomerReport();
 
@@ -33,18 +35,48 @@ export default function StaffDashboardPage() {
     weekday: "long", year: "numeric", month: "long", day: "numeric",
   });
 
-  const invoices = invoicesData?.data ?? [];
-  const customers = customersData?.items ?? [];
+  const allInvoices = invoicesData?.data ?? [];
+  const customers   = customersData?.items ?? [];
+
+  // Filter to today's invoices only
+  const todayStr = new Date().toISOString().split("T")[0];
+  const todayInvoices = useMemo(() =>
+    allInvoices.filter(inv => {
+      const raw = inv as unknown as Record<string, unknown>;
+      const d = String(raw.saleDate ?? raw.createdAt ?? "");
+      return d.startsWith(todayStr);
+    }),
+  [allInvoices, todayStr]);
+
+  // Show the 6 most recent for the table (today first, then recent)
+  const tableInvoices = useMemo(() =>
+    [...allInvoices]
+      .sort((a, b) => {
+        const da = String((a as unknown as Record<string, unknown>).saleDate ?? "");
+        const db = String((b as unknown as Record<string, unknown>).saleDate ?? "");
+        return db.localeCompare(da);
+      })
+      .slice(0, 6),
+  [allInvoices]);
+
+  const todayRevenue  = todayInvoices.reduce((sum, inv) => sum + ((inv as unknown as Record<string, unknown>).totalAmount as number ?? 0), 0);
+  const todayPartsSold = todayInvoices.reduce((s, i) => s + (i.items?.length ?? 0), 0);
 
   const filteredCustomers = customers.filter(c => {
     if (!searchQuery) return true;
     const q = searchQuery.toLowerCase();
-    const name = c.fullName?.toLowerCase() ?? "";
+    const name  = c.fullName?.toLowerCase() ?? "";
     const phone = c.phone?.toLowerCase() ?? "";
     return name.includes(q) || phone.includes(q);
   });
 
-  const todayRevenue = invoices.reduce((sum, inv) => sum + (inv.finalAmount ?? 0), 0);
+  const filterChips = [
+    { key: "all",     label: "All",         Icon: null },
+    { key: "name",    label: "Name",        Icon: User },
+    { key: "phone",   label: "Phone",       Icon: Phone },
+    { key: "vehicle", label: "Vehicle No.", Icon: Car },
+    { key: "id",      label: "Customer ID", Icon: Hash },
+  ];
 
   return (
     <div>
@@ -74,20 +106,24 @@ export default function StaffDashboardPage() {
         <div className="relative z-10">
           <div className="flex items-start justify-between mb-1">
             <div>
-              <p className="text-[10px] text-zinc-500 font-medium mb-1">Today&apos;s Performance</p>
+              <p className="text-[10px] text-zinc-500 font-medium mb-1">Today&apos;s Revenue</p>
               <div className="flex items-baseline gap-3">
                 <span className="text-3xl font-semibold text-white tabular-nums">
                   Rs. {todayRevenue.toLocaleString()}
                 </span>
-                <span className="text-xs font-medium text-orange-400 flex items-center gap-0.5">
-                  <TrendingUp className="w-3 h-3" />8.3%
-                </span>
+                {todayInvoices.length > 0 && (
+                  <span className="text-xs font-medium text-orange-400 flex items-center gap-0.5">
+                    <TrendingUp className="w-3 h-3" />{todayInvoices.length} sale{todayInvoices.length !== 1 ? "s" : ""}
+                  </span>
+                )}
               </div>
-              <p className="text-[10px] text-zinc-500 mt-0.5">vs yesterday</p>
+              <p className="text-[10px] text-zinc-500 mt-0.5">
+                {todayInvoices.length === 0 ? "No sales recorded today yet" : `${todayPartsSold} part${todayPartsSold !== 1 ? "s" : ""} sold today`}
+              </p>
             </div>
           </div>
 
-          {/* Sparkline */}
+          {/* Sparkline — decorative */}
           <svg className="w-full mt-3 mb-4" height="48" viewBox="0 0 600 48" preserveAspectRatio="none">
             <defs>
               <linearGradient id="sf2" x1="0" y1="0" x2="0" y2="1">
@@ -99,13 +135,13 @@ export default function StaffDashboardPage() {
             <path d="M0,36 C30,34 60,28 90,30 C120,32 150,22 180,24 C210,26 240,18 270,16 C300,14 330,20 360,18 C390,16 420,10 450,12 C480,14 510,8 540,6 C570,4 590,5 600,4 L600,48 L0,48 Z" fill="url(#sf2)" />
           </svg>
 
-          {/* Mini stats */}
+          {/* Mini stats — all from live data */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
             {[
-              { label: "Parts Sold",     value: invoices.reduce((s, i) => s + (i.items?.length ?? 0), 0) },
-              { label: "Invoices",       value: invoices.length },
-              { label: "New Customers",  value: report?.newCustomersThisMonth ?? "—" },
-              { label: "Total Customers",value: report?.totalCustomers ?? "—" },
+              { label: "Parts Sold Today",  value: todayPartsSold },
+              { label: "Invoices Today",    value: todayInvoices.length },
+              { label: "New Customers",     value: report?.newCustomersThisMonth ?? "—" },
+              { label: "Total Customers",   value: report?.totalCustomers ?? "—" },
             ].map(({ label, value }) => (
               <div key={label} className="rounded-lg p-2.5 transition-colors" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
                 <p className="text-[9px] text-zinc-500 mb-0.5">{label}</p>
@@ -119,12 +155,11 @@ export default function StaffDashboardPage() {
       {/* Customer quick lookup */}
       <div className="bg-white border-[1.5px] border-zinc-200 rounded-2xl p-4 mb-4 focus-within:border-orange-300 focus-within:shadow-[0_0_0_3px_rgba(249,115,22,0.07)] transition-all">
         <div className="flex items-center gap-2.5 mb-3">
-          <Search className="w-4 h-4 text-orange-500" />
+          <SearchIcon className="w-4 h-4 text-orange-500" />
           <span className="text-xs font-semibold text-zinc-900">Quick Customer Lookup</span>
           <span className="text-[9px] text-zinc-400 ml-auto hidden sm:block">Search by name, phone, vehicle no., or customer ID</span>
         </div>
 
-        {/* Search input */}
         <div className="flex items-center gap-2 bg-zinc-50 rounded-lg px-3 py-2 border border-zinc-100 focus-within:border-orange-200 focus-within:bg-white transition-all mb-3">
           <input
             type="text"
@@ -135,26 +170,20 @@ export default function StaffDashboardPage() {
           />
         </div>
 
-        {/* Filter chips */}
+        {/* Filter chips — Lucide icons, no emojis */}
         <div className="flex flex-wrap gap-1.5 mb-3">
-          {[
-            { key: "all", label: "All" },
-            { key: "name", label: "Name", icon: "👤" },
-            { key: "phone", label: "Phone", icon: "📞" },
-            { key: "vehicle", label: "Vehicle No.", icon: "🚗" },
-            { key: "id", label: "Customer ID", icon: "#" },
-          ].map(f => (
+          {filterChips.map(({ key, label, Icon }) => (
             <button
-              key={f.key}
-              onClick={() => setActiveFilter(f.key)}
+              key={key}
+              onClick={() => setActiveFilter(key)}
               className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium transition-all border ${
-                activeFilter === f.key
+                activeFilter === key
                   ? "bg-orange-50 border-orange-200 text-orange-700"
                   : "bg-zinc-100 border-transparent text-zinc-500 hover:bg-white hover:border-zinc-200 hover:text-zinc-700"
               }`}
             >
-              {f.icon && <span>{f.icon}</span>}
-              {f.label}
+              {Icon && <Icon className="w-3 h-3" />}
+              {label}
             </button>
           ))}
         </div>
@@ -193,12 +222,16 @@ export default function StaffDashboardPage() {
 
       {/* Middle row */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 mb-4">
-        {/* Today's sales table */}
+        {/* Recent sales table */}
         <div className="bg-white border border-zinc-200 rounded-2xl shadow-sm lg:col-span-3">
           <div className="flex items-center justify-between px-5 pt-5 pb-0">
             <div>
-              <h3 className="text-sm font-semibold text-zinc-900">Today&apos;s Sales</h3>
-              <p className="text-[10px] text-zinc-400 mt-0.5">{invoices.length} invoices created</p>
+              <h3 className="text-sm font-semibold text-zinc-900">Recent Sales</h3>
+              <p className="text-[10px] text-zinc-400 mt-0.5">
+                {todayInvoices.length > 0
+                  ? `${todayInvoices.length} invoice${todayInvoices.length !== 1 ? "s" : ""} today`
+                  : "No sales today yet"}
+              </p>
             </div>
             <Link href={ROUTES.STAFF_SALES_INVOICES} className="text-[11px] text-orange-600 hover:text-orange-700 font-medium flex items-center gap-0.5 transition-colors">
               View All<ArrowRight className="w-3 h-3" />
@@ -208,7 +241,7 @@ export default function StaffDashboardPage() {
             <table className="w-full border-collapse">
               <thead>
                 <tr>
-                  {["Invoice", "Customer", "Part", "Qty", "Amount", "Action"].map(h => (
+                  {["Invoice", "Customer", "Part", "Qty", "Amount", "Status"].map(h => (
                     <th key={h} className={`px-3.5 py-2 text-left text-[10px] font-semibold text-zinc-400 uppercase tracking-wider border-b border-zinc-100 ${h === "Qty" ? "hidden sm:table-cell" : ""}`}>{h}</th>
                   ))}
                 </tr>
@@ -216,37 +249,49 @@ export default function StaffDashboardPage() {
               <tbody>
                 {invoicesLoading ? (
                   <tr><td colSpan={6} className="px-5 py-8 text-center text-xs text-zinc-300">Loading...</td></tr>
-                ) : invoices.length === 0 ? (
-                  <tr><td colSpan={6} className="px-5 py-8 text-center text-xs text-zinc-300">No sales today</td></tr>
+                ) : tableInvoices.length === 0 ? (
+                  <tr><td colSpan={6} className="px-5 py-8 text-center text-xs text-zinc-300">No sales yet</td></tr>
                 ) : (
-                  invoices.map((inv, idx) => (
-                    <tr key={inv.id ?? idx} className="hover:bg-zinc-50 transition-colors">
-                      <td className="px-3.5 py-2.5 text-[12px] font-medium text-zinc-700 tabular-nums border-b border-zinc-50">#{inv.id}</td>
-                      <td className="px-3.5 py-2.5 text-[12px] text-zinc-600 border-b border-zinc-50">
-                        {(inv.customer as { user?: { name?: string } })?.user?.name ?? "—"}
-                      </td>
-                      <td className="px-3.5 py-2.5 text-[12px] text-zinc-600 border-b border-zinc-50">
-                        {inv.items?.[0] ? `${(inv.items[0] as { part?: { name?: string } }).part?.name ?? "Part"} ${inv.items.length > 1 ? `+${inv.items.length - 1}` : ""}` : "—"}
-                      </td>
-                      <td className="px-3.5 py-2.5 text-[12px] text-zinc-400 tabular-nums border-b border-zinc-50 hidden sm:table-cell">
-                        {inv.items?.reduce((s, i) => s + i.quantity, 0) ?? 0}
-                      </td>
-                      <td className="px-3.5 py-2.5 text-[12px] font-medium text-zinc-700 tabular-nums border-b border-zinc-50">
-                        Rs. {(inv.finalAmount ?? 0).toLocaleString()}
-                      </td>
-                      <td className="px-3.5 py-2.5 border-b border-zinc-50">
-                        {inv.status === "Completed" ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-green-50 text-green-700">
-                            <Check className="w-2.5 h-2.5" />Sent
-                          </span>
-                        ) : (
-                          <button className="text-[10px] text-orange-600 hover:text-orange-700 font-medium flex items-center gap-0.5 transition-colors">
-                            <Mail className="w-2.5 h-2.5" />Resend
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  ))
+                  tableInvoices.map((inv, idx) => {
+                    const raw = inv as unknown as Record<string, unknown>;
+                    const invoiceId = String(raw.invoiceId ?? raw.id ?? idx).slice(0, 8).toUpperCase();
+                    const customerName = String(raw.customerName ?? "—");
+                    const firstItem = Array.isArray(raw.items) ? (raw.items[0] as Record<string, unknown>) : null;
+                    const partName = firstItem ? String(firstItem.partName ?? firstItem.partId ?? "Part") : "—";
+                    const extraItems = Array.isArray(raw.items) && raw.items.length > 1 ? ` +${raw.items.length - 1}` : "";
+                    const totalQty = Array.isArray(raw.items)
+                      ? (raw.items as Record<string, unknown>[]).reduce((s, i) => s + (Number(i.quantity) || 0), 0)
+                      : 0;
+                    const amount = Number(raw.totalAmount ?? 0);
+                    const isPaid = Boolean(raw.isPaid);
+                    const isToday = String(raw.saleDate ?? "").startsWith(todayStr);
+
+                    return (
+                      <tr key={String(raw.invoiceId ?? idx)} className="hover:bg-zinc-50 transition-colors">
+                        <td className="px-3.5 py-2.5 text-[12px] font-medium text-zinc-700 tabular-nums border-b border-zinc-50">
+                          <span className="font-mono">#{invoiceId}</span>
+                          {isToday && <span className="ml-1.5 text-[9px] text-orange-500 font-semibold">Today</span>}
+                        </td>
+                        <td className="px-3.5 py-2.5 text-[12px] text-zinc-600 border-b border-zinc-50">{customerName}</td>
+                        <td className="px-3.5 py-2.5 text-[12px] text-zinc-600 border-b border-zinc-50">{partName}{extraItems}</td>
+                        <td className="px-3.5 py-2.5 text-[12px] text-zinc-400 tabular-nums border-b border-zinc-50 hidden sm:table-cell">{totalQty}</td>
+                        <td className="px-3.5 py-2.5 text-[12px] font-medium text-zinc-700 tabular-nums border-b border-zinc-50">
+                          Rs. {amount.toLocaleString()}
+                        </td>
+                        <td className="px-3.5 py-2.5 border-b border-zinc-50">
+                          {isPaid ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-green-50 text-green-700">
+                              <Check className="w-2.5 h-2.5" />Paid
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-700">
+                              <Mail className="w-2.5 h-2.5" />Credit
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>
@@ -293,7 +338,7 @@ export default function StaffDashboardPage() {
             )}
           </div>
 
-          {/* Top spenders mini */}
+          {/* Top spenders */}
           <div className="bg-white border border-zinc-200 rounded-2xl p-4 shadow-sm flex-1">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-xs font-semibold text-zinc-900">Top Spenders</h3>
@@ -357,8 +402,8 @@ export default function StaffDashboardPage() {
   );
 }
 
-// Local Search icon to avoid import conflict
-function Search({ className }: { className?: string }) {
+// Local Search icon to avoid import conflict with lucide Search
+function SearchIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />

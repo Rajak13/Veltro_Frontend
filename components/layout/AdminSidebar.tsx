@@ -60,9 +60,9 @@ const navGroups: NavGroup[] = [
   {
     label: "Financial Reports", id: "fin", icon: BarChart3,
     children: [
-      { label: "Daily Report",   href: "/reports?period=daily" },
-      { label: "Monthly Report", href: "/reports?period=monthly" },
-      { label: "Yearly Report",  href: "/reports?period=yearly" },
+      { label: "Daily Report",   href: "/financial-reports?period=daily" },
+      { label: "Monthly Report", href: "/financial-reports?period=monthly" },
+      { label: "Yearly Report",  href: "/financial-reports?period=yearly" },
     ],
   },
 ];

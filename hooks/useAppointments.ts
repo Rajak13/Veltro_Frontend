@@ -45,6 +45,10 @@ export const useMyAppointments = () =>
       const res = await api.get<ApiResponse<Appointment[]>>("/appointments");
       return (res.data.data ?? []).map((a) => mapAppointment(a as Record<string, unknown>));
     },
+    refetchInterval: 10_000,
+    refetchIntervalInBackground: true,
+    refetchOnWindowFocus: true,
+    staleTime: 0,
   });
 
 export const useCreateAppointment = () => {
@@ -65,18 +69,27 @@ export const useCancelAppointment = () => {
   });
 };
 
-/// <summary>Returns the set of booked hour slots (0-23) for a given date string (YYYY-MM-DD).</summary>
+export interface SlotAvailability {
+  isSunday: boolean;
+  /** hour (8–17) → number of bookings already made (max 5) */
+  slotCounts: Record<number, number>;
+}
+
+/// <summary>Returns slot availability for a given date string (YYYY-MM-DD).</summary>
 export const useBookedSlots = (date: string | null) =>
   useQuery({
     queryKey: ["appointments", "slots", date],
     queryFn: async () => {
-      // Convert the local date string to a UTC date string for the query,
-      // since the backend stores ScheduledDate in UTC.
-      // We pass the date as-is and let the backend interpret it as a UTC calendar day.
-      const res = await api.get<ApiResponse<number[]>>("/appointments/slots", {
+      const res = await api.get<ApiResponse<SlotAvailability>>("/appointments/slots", {
         params: { date },
       });
-      return res.data.data ?? [];
+      const raw = res.data.data as { isSunday: boolean; slotCounts: Record<string, number> };
+      // Normalise keys to numbers
+      const slotCounts: Record<number, number> = {};
+      for (const [k, v] of Object.entries(raw.slotCounts ?? {})) {
+        slotCounts[Number(k)] = v;
+      }
+      return { isSunday: raw.isSunday ?? false, slotCounts } as SlotAvailability;
     },
     enabled: !!date,
     staleTime: 30_000,
@@ -105,6 +118,7 @@ export const useStaffAppointments = (statusFilter?: string) =>
       const res = await api.get<ApiResponse<StaffAppointment[]>>("/staff/appointments", { params });
       return res.data.data ?? [];
     },
+    refetchInterval: 15_000,
   });
 
 export const useUpdateAppointmentStatus = () => {

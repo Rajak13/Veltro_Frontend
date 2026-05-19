@@ -17,7 +17,10 @@ export const useNotifications = () =>
       const res = await api.get<ApiResponse<NotificationItem[]>>("/notifications");
       return res.data.data ?? [];
     },
-    refetchInterval: 60_000, // poll every 60s
+    refetchInterval: 5_000,        // poll every 5s
+    refetchIntervalInBackground: true, // keep polling even when tab is not focused
+    refetchOnWindowFocus: true,    // immediate refetch when user switches back to tab
+    staleTime: 0,                  // always consider data stale so refetch fires
   });
 
 export const useMarkNotificationRead = () => {

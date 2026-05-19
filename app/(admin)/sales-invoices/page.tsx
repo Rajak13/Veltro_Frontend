@@ -12,8 +12,14 @@ import Modal from "@/components/ui/Modal";
 import Badge from "@/components/ui/Badge";
 import CreateSalesInvoiceForm from "@/components/forms/CreateSalesInvoiceForm";
 import { useSalesInvoices, useSendInvoiceEmail } from "@/hooks/useInvoices";
-import { Plus, Tag, Mail } from "lucide-react";
+import { Plus, Tag, Mail, Download } from "lucide-react";
 import type { SalesInvoice } from "@/types";
+import ExportPdfButton from "@/components/ui/ExportPdfButton";
+import {
+  exportSalesInvoicesPdf,
+  exportSingleSalesInvoicePdf,
+  type SalesInvoiceExportRow,
+} from "@/lib/exportPdf";
 
 export default function AdminSalesInvoicesPage() {
   const [page, setPage] = useState(1);
@@ -51,9 +57,40 @@ export default function AdminSalesInvoicesPage() {
         subtitle="View and manage all customer sales"
         breadcrumb={[{ label: "Admin" }, { label: "Sales Invoices" }]}
         action={
-          <Button onClick={() => setCreateOpen(true)}>
-            <Plus className="w-4 h-4" /> New Invoice
-          </Button>
+          <div className="flex items-center gap-2">
+            {filteredRows.length > 0 && (
+              <ExportPdfButton
+                size="md"
+                label="Export All"
+                onExport={() =>
+                  exportSalesInvoicesPdf(
+                    filteredRows.map((r) => ({
+                      invoiceId: String(r.invoiceId ?? ""),
+                      customerName: String(r.customerName ?? "—"),
+                      customerEmail: String(r.customerEmail ?? ""),
+                      staffName: String(r.staffName ?? ""),
+                      saleDate: String(r.saleDate ?? r.createdAt ?? ""),
+                      totalAmount: Number(r.totalAmount ?? 0),
+                      discountApplied: Number(r.discountApplied ?? 0),
+                      finalAmount: Number(r.finalAmount ?? r.totalAmount ?? 0),
+                      isPaid: Boolean(r.isPaid),
+                      items: Array.isArray(r.items)
+                        ? (r.items as Record<string, unknown>[]).map((item) => ({
+                            partName: String(item.partName ?? ""),
+                            quantity: Number(item.quantity ?? 0),
+                            unitPrice: Number(item.unitPrice ?? 0),
+                            lineTotal: Number(item.lineTotal ?? Number(item.quantity ?? 0) * Number(item.unitPrice ?? 0)),
+                          }))
+                        : [],
+                    }))
+                  )
+                }
+              />
+            )}
+            <Button onClick={() => setCreateOpen(true)}>
+              <Plus className="w-4 h-4" /> New Invoice
+            </Button>
+          </div>
         }
       />
 
@@ -214,6 +251,24 @@ function InvoiceDetail({ invoice, onClose }: { invoice: Record<string, unknown>;
   const isPaid = Boolean(invoice.isPaid);
   const invoiceId = String(invoice.invoiceId ?? "");
 
+  const exportRow: SalesInvoiceExportRow = {
+    invoiceId,
+    customerName: String(invoice.customerName ?? "—"),
+    customerEmail: String(invoice.customerEmail ?? ""),
+    staffName: String(invoice.staffName ?? ""),
+    saleDate: String(invoice.saleDate ?? invoice.createdAt ?? ""),
+    totalAmount,
+    discountApplied: discount,
+    finalAmount,
+    isPaid,
+    items: items.map((item) => ({
+      partName: String(item.partName ?? item.partId ?? "—"),
+      quantity: Number(item.quantity ?? 0),
+      unitPrice: Number(item.unitPrice ?? 0),
+      lineTotal: Number(item.lineTotal ?? Number(item.quantity ?? 0) * Number(item.unitPrice ?? 0)),
+    })),
+  };
+
   return (
     <div className="space-y-5 text-sm">
       <div className="grid grid-cols-2 gap-4">
@@ -285,6 +340,11 @@ function InvoiceDetail({ invoice, onClose }: { invoice: Record<string, unknown>;
 
       <div className="flex justify-end gap-3 pt-1 border-t border-zinc-100">
         <Button variant="outline" size="sm" onClick={onClose}>Close</Button>
+        <ExportPdfButton
+          size="sm"
+          label="Export PDF"
+          onExport={() => exportSingleSalesInvoicePdf(exportRow)}
+        />
         <Button size="sm" loading={isSending} onClick={() => sendEmail(invoiceId)} disabled={!invoiceId}>
           <Mail className="w-3.5 h-3.5" /> Send Invoice Email
         </Button>
