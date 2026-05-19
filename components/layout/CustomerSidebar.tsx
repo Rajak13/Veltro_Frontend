@@ -4,12 +4,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Car, Wrench, Search, ShoppingBag, PackagePlus,
-  CalendarPlus, CalendarCheck, Star, User, Gift, Bell, Cog, LogOut, ChevronDown,
+  CalendarPlus, CalendarCheck, Star, User, Gift, Cog, LogOut, ChevronDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { ROUTES } from "@/constants/routes";
 import { useState } from "react";
+import NotificationBell from "@/components/ui/NotificationBell";
 
 interface NavGroup {
   label: string;
@@ -46,7 +47,6 @@ const singleItems: NavItem[] = [
   { label: "Submit Review",          href: ROUTES.CUSTOMER_REVIEWS,      icon: Star },
   { label: "My Profile",             href: ROUTES.CUSTOMER_PROFILE,      icon: User },
   { label: "Loyalty Rewards",        href: ROUTES.CUSTOMER_PROFILE,      icon: Gift },
-  { label: "Notifications",          href: "#",                          icon: Bell, badge: 2 },
 ];
 
 export default function CustomerSidebar() {
@@ -96,7 +96,11 @@ export default function CustomerSidebar() {
         <p className="px-5 pt-3 pb-0.5 text-[10px] font-semibold text-zinc-300 uppercase tracking-widest">Account</p>
         <NavLink item={singleItems[8]} pathname={pathname} />
         <NavLink item={singleItems[9]} pathname={pathname} />
-        <NavLink item={singleItems[10]} pathname={pathname} />
+        {/* Notifications — inline bell with dropdown */}
+        <div className="mx-2 px-3 py-2 flex items-center gap-2.5">
+          <NotificationBell />
+          <span className="text-[13px] font-[450] text-zinc-500">Notifications</span>
+        </div>
       </nav>
 
       {/* User footer */}

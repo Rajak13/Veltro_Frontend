@@ -144,3 +144,84 @@ export const useSendInvoiceEmail = () =>
     onSuccess: () => toast.success("Invoice email sent to customer"),
     onError: () => toast.error("Failed to send invoice email"),
   });
+
+// ─── Credit Management ────────────────────────────────────────────────────────
+
+export type UnpaidInvoiceRow = {
+  invoiceId: string;
+  customerId: string;
+  customerName: string;
+  customerEmail: string;
+  totalAmount: number;
+  amountPaid: number;
+  discountApplied: number;
+  saleDate: string;
+  isPaid: boolean;
+};
+
+export const useUnpaidInvoices = () =>
+  useQuery({
+    queryKey: ["invoices", "unpaid"],
+    queryFn: async () => {
+      const res = await api.get<ApiResponse<Record<string, unknown>[]>>(
+        "/invoices/sales/unpaid"
+      );
+      return (res.data.data ?? []).map((item) => ({
+        invoiceId: String(item.invoiceId ?? item.InvoiceId ?? ""),
+        customerId: String(item.customerId ?? item.CustomerId ?? ""),
+        customerName: String(item.customerName ?? item.CustomerName ?? ""),
+        customerEmail: String(item.customerEmail ?? item.CustomerEmail ?? ""),
+        totalAmount: Number(item.totalAmount ?? item.TotalAmount ?? 0),
+        amountPaid: Number(item.amountPaid ?? item.AmountPaid ?? 0),
+        discountApplied: Number(item.discountApplied ?? item.DiscountApplied ?? 0),
+        saleDate: String(item.saleDate ?? item.SaleDate ?? ""),
+        isPaid: Boolean(item.isPaid ?? item.IsPaid),
+      })) as UnpaidInvoiceRow[];
+    },
+  });
+
+export const useMarkInvoicePaid = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (invoiceId: string) =>
+      api.put(`/invoices/sales/${invoiceId}/mark-paid`).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["invoices"] });
+      toast.success("Invoice marked as paid");
+    },
+    onError: () => toast.error("Failed to mark invoice as paid"),
+  });
+};
+
+export const useSendOverdueReminder = () =>
+  useMutation({
+    mutationFn: (invoiceId: string) =>
+      api.post(`/invoices/sales/${invoiceId}/send-overdue-reminder`).then((r) => r.data),
+    onSuccess: () => toast.success("Overdue reminder sent to customer"),
+    onError: () => toast.error("Failed to send reminder"),
+  });
+
+export const useRecordPayment = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ invoiceId, amount }: { invoiceId: string; amount: number }) =>
+      api.post<ApiResponse<{ amountPaid: number; remaining: number; fullyPaid: boolean }>>(
+        `/invoices/sales/${invoiceId}/record-payment`,
+        { amount }
+      ).then((r) => r.data),
+    onSuccess: async (data) => {
+      await qc.invalidateQueries({ queryKey: ["invoices", "unpaid"] });
+      await qc.refetchQueries({ queryKey: ["invoices", "unpaid"] });
+      qc.invalidateQueries({ queryKey: ["sales-invoices"] });
+      if (data.data?.fullyPaid) {
+        toast.success("Invoice fully paid!");
+      } else {
+        toast.success(`Payment recorded. Remaining: Rs. ${data.data?.remaining?.toLocaleString()}`);
+      }
+    },
+    onError: (err: unknown) => {
+      const e = err as { response?: { data?: { message?: string } } };
+      toast.error(e.response?.data?.message ?? "Failed to record payment");
+    },
+  });
+};

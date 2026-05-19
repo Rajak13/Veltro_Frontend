@@ -13,6 +13,7 @@ export const ROUTES = {
   ADMIN_CUSTOMERS: "/admin-customers",
   ADMIN_CUSTOMER_DETAIL: (id: number | string) => `/admin-customers/${id}`,
   ADMIN_INVENTORY_REPORT: "/reports/inventory",
+  ADMIN_FINANCIAL_REPORTS: "/financial-reports",
   ADMIN_SETTINGS: "/settings",
   ADMIN_REVIEW_MODERATION: "/review-moderation",
 
@@ -25,6 +26,7 @@ export const ROUTES = {
   STAFF_REPORTS: "/staff-reports",
   STAFF_PART_REQUESTS: "/staff-part-requests",
   STAFF_APPOINTMENTS: "/staff-appointments",
+  STAFF_CREDIT_MANAGEMENT: "/staff-credit-management",
 
   // Customer
   CUSTOMER_DASHBOARD: "/customer/dashboard",

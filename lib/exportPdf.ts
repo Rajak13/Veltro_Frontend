@@ -285,6 +285,199 @@ export async function exportCustomerPurchaseHistoryPdf(
   doc.save("veltro-purchase-history.pdf");
 }
 
+// ─── Sales Invoice exports ────────────────────────────────────────────────────
+
+export type SalesInvoiceExportRow = {
+  invoiceId: string;
+  customerName: string;
+  customerEmail?: string;
+  staffName?: string;
+  saleDate: string;
+  totalAmount: number;
+  discountApplied: number;
+  finalAmount: number;
+  isPaid: boolean;
+  items?: { partName: string; quantity: number; unitPrice: number; lineTotal: number }[];
+};
+
+/** Export the full sales invoice list as a PDF table. */
+export async function exportSalesInvoicesPdf(
+  invoices: SalesInvoiceExportRow[],
+  filename = "veltro-sales-invoices.pdf"
+) {
+  const doc = await createPdfDocument("Sales Invoices", "All customer sales records");
+
+  const totalRevenue = invoices.reduce((s, i) => s + i.finalAmount, 0);
+  const totalDiscount = invoices.reduce((s, i) => s + i.discountApplied, 0);
+  const paidCount = invoices.filter((i) => i.isPaid).length;
+
+  await appendTables(doc, [
+    {
+      title: "Summary",
+      head: ["Metric", "Value"],
+      body: [
+        ["Total invoices", invoices.length],
+        ["Paid", paidCount],
+        ["Unpaid", invoices.length - paidCount],
+        ["Total discounts given", formatRs(totalDiscount)],
+        ["Total revenue", formatRs(totalRevenue)],
+      ],
+    },
+    {
+      title: "Invoice List",
+      head: ["Invoice #", "Customer", "Date", "Subtotal", "Discount", "Total", "Status"],
+      body: invoices.map((inv) => [
+        `#${inv.invoiceId.slice(0, 8).toUpperCase()}`,
+        inv.customerName,
+        new Date(inv.saleDate).toLocaleDateString("en-NP", { year: "numeric", month: "short", day: "numeric" }),
+        formatRs(inv.totalAmount),
+        inv.discountApplied > 0 ? `-${formatRs(inv.discountApplied)}` : "—",
+        formatRs(inv.finalAmount),
+        inv.isPaid ? "Paid" : "Unpaid",
+      ]),
+    },
+  ]);
+
+  doc.save(filename);
+}
+
+/** Export a single sales invoice as a detailed PDF receipt. */
+export async function exportSingleSalesInvoicePdf(inv: SalesInvoiceExportRow) {
+  const doc = await createPdfDocument(
+    `Sales Invoice #${inv.invoiceId.slice(0, 8).toUpperCase()}`,
+    `Customer: ${inv.customerName}`
+  );
+
+  const sections: TableSection[] = [
+    {
+      title: "Invoice Details",
+      head: ["Field", "Value"],
+      body: [
+        ["Invoice #", `#${inv.invoiceId.slice(0, 8).toUpperCase()}`],
+        ["Customer", inv.customerName],
+        ["Email", inv.customerEmail ?? "—"],
+        ["Staff", inv.staffName ?? "—"],
+        ["Date", new Date(inv.saleDate).toLocaleDateString("en-NP", { year: "numeric", month: "long", day: "numeric" })],
+        ["Payment Status", inv.isPaid ? "Paid" : "Unpaid"],
+      ],
+    },
+  ];
+
+  if (inv.items && inv.items.length > 0) {
+    sections.push({
+      title: "Line Items",
+      head: ["Part", "Qty", "Unit Price", "Line Total"],
+      body: inv.items.map((item) => [
+        item.partName,
+        item.quantity,
+        formatRs(item.unitPrice),
+        formatRs(item.lineTotal),
+      ]),
+    });
+  }
+
+  sections.push({
+    title: "Totals",
+    head: ["", "Amount"],
+    body: [
+      ["Subtotal", formatRs(inv.totalAmount)],
+      ...(inv.discountApplied > 0 ? [["Loyalty Discount (10%)", `-${formatRs(inv.discountApplied)}`] as [string, string]] : []),
+      ["Total", formatRs(inv.finalAmount)],
+    ],
+  });
+
+  await appendTables(doc, sections);
+  doc.save(`veltro-invoice-${inv.invoiceId.slice(0, 8).toUpperCase()}.pdf`);
+}
+
+// ─── Purchase Invoice exports ─────────────────────────────────────────────────
+
+export type PurchaseInvoiceExportRow = {
+  invoiceId: string;
+  vendorName: string;
+  purchaseDate: string;
+  totalAmount: number;
+  notes?: string;
+  items?: { partName: string; quantity: number; unitPrice: number; lineTotal: number }[];
+};
+
+/** Export the full purchase invoice list as a PDF table. */
+export async function exportPurchaseInvoicesPdf(
+  invoices: PurchaseInvoiceExportRow[],
+  filename = "veltro-purchase-invoices.pdf"
+) {
+  const doc = await createPdfDocument("Purchase Invoices", "All vendor purchase records");
+
+  const totalSpent = invoices.reduce((s, i) => s + i.totalAmount, 0);
+
+  await appendTables(doc, [
+    {
+      title: "Summary",
+      head: ["Metric", "Value"],
+      body: [
+        ["Total invoices", invoices.length],
+        ["Total spent", formatRs(totalSpent)],
+      ],
+    },
+    {
+      title: "Invoice List",
+      head: ["Invoice #", "Vendor", "Date", "Items", "Total"],
+      body: invoices.map((inv) => [
+        `#${inv.invoiceId.slice(0, 8).toUpperCase()}`,
+        inv.vendorName,
+        new Date(inv.purchaseDate).toLocaleDateString("en-NP", { year: "numeric", month: "short", day: "numeric" }),
+        inv.items?.length ?? 0,
+        formatRs(inv.totalAmount),
+      ]),
+    },
+  ]);
+
+  doc.save(filename);
+}
+
+/** Export a single purchase invoice as a detailed PDF. */
+export async function exportSinglePurchaseInvoicePdf(inv: PurchaseInvoiceExportRow) {
+  const doc = await createPdfDocument(
+    `Purchase Invoice #${inv.invoiceId.slice(0, 8).toUpperCase()}`,
+    `Vendor: ${inv.vendorName}`
+  );
+
+  const sections: TableSection[] = [
+    {
+      title: "Invoice Details",
+      head: ["Field", "Value"],
+      body: [
+        ["Invoice #", `#${inv.invoiceId.slice(0, 8).toUpperCase()}`],
+        ["Vendor", inv.vendorName],
+        ["Date", new Date(inv.purchaseDate).toLocaleDateString("en-NP", { year: "numeric", month: "long", day: "numeric" })],
+        ...(inv.notes ? [["Notes", inv.notes] as [string, string]] : []),
+      ],
+    },
+  ];
+
+  if (inv.items && inv.items.length > 0) {
+    sections.push({
+      title: "Line Items",
+      head: ["Part", "Qty", "Unit Price", "Line Total"],
+      body: inv.items.map((item) => [
+        item.partName,
+        item.quantity,
+        formatRs(item.unitPrice),
+        formatRs(item.lineTotal),
+      ]),
+    });
+  }
+
+  sections.push({
+    title: "Total",
+    head: ["", "Amount"],
+    body: [["Total Paid", formatRs(inv.totalAmount)]],
+  });
+
+  await appendTables(doc, sections);
+  doc.save(`veltro-purchase-${inv.invoiceId.slice(0, 8).toUpperCase()}.pdf`);
+}
+
 export async function exportCustomerServiceHistoryPdf(
   appointments: CustomerServiceExportRow[],
   customerName?: string

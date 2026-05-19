@@ -24,6 +24,8 @@ export interface TopSpender {
   customerId: string;
   name: string;
   totalSpent: number;
+  invoiceCount?: number;
+  lastPurchaseDate?: string;
 }
 
 export interface RegularCustomer {
@@ -71,17 +73,28 @@ type TopSpenderApi = {
   totalSpent: number;
 };
 
-const mapTopSpender = (c: TopSpenderApi): TopSpender => ({
+type CustomerReportApi = TopSpenderApi & {
+  invoiceCount?: number;
+  creditBalance?: number;
+  lastPurchaseDate?: string;
+};
+
+const mapTopSpender = (c: CustomerReportApi): TopSpender & {
+  invoiceCount?: number;
+  lastPurchaseDate?: string;
+} => ({
   customerId: c.customerId,
   name: c.customerName ?? c.name ?? "Unknown",
   totalSpent: c.totalSpent,
+  invoiceCount: c.invoiceCount,
+  lastPurchaseDate: c.lastPurchaseDate,
 });
 
 export const useTopSpenders = (top = 10) =>
   useQuery({
     queryKey: ["reports", "customers", "top-spenders", top],
     queryFn: async () => {
-      const res = await api.get<ApiResponse<TopSpenderApi[]>>(
+      const res = await api.get<ApiResponse<CustomerReportApi[]>>(
         "/reports/customers/top-spenders",
         { params: { top } }
       );
@@ -101,7 +114,13 @@ export const useRegularCustomers = (minPurchases = 3) =>
         "/reports/customers/regulars",
         { params: { minPurchases } }
       );
-      return res.data.data;
+      return (res.data.data ?? []).map((c) => ({
+        customerId: c.customerId,
+        name: c.customerName ?? c.name ?? "Customer",
+        purchaseCount: c.invoiceCount ?? c.purchaseCount ?? 0,
+        invoiceCount: c.invoiceCount,
+        totalSpent: c.totalSpent,
+      }));
     },
   });
 
@@ -113,10 +132,15 @@ export const useOverdueCredits = () =>
   useQuery({
     queryKey: ["reports", "customers", "overdue-credits"],
     queryFn: async () => {
-      const res = await api.get<ApiResponse<OverdueCredit[]>>(
-        "/reports/customers/overdue-credits"
-      );
-      return res.data.data;
+      const res = await api.get<
+        ApiResponse<(OverdueCredit & { customerName?: string })[]>
+      >("/reports/customers/overdue-credits");
+      return (res.data.data ?? []).map((c) => ({
+        customerId: c.customerId,
+        name: c.customerName ?? c.name ?? "Customer",
+        creditBalance: c.creditBalance,
+        lastPurchaseDate: c.lastPurchaseDate,
+      }));
     },
   });
 
@@ -126,20 +150,32 @@ export const useCustomerReport = () =>
   useQuery({
     queryKey: ["reports", "customers", "combined"],
     queryFn: async () => {
-      const [topRes, regRes] = await Promise.all([
+      // Run all three in parallel; stats may fail on first deploy (endpoint just added)
+      const [topRes, regRes, statsRes] = await Promise.allSettled([
         api.get<ApiResponse<TopSpenderApi[]>>("/reports/customers/top-spenders", { params: { top: 10 } }),
         api.get<ApiResponse<RegularCustomer[]>>("/reports/customers/regulars"),
+        api.get<ApiResponse<{ total: number; newThisMonth: number }>>("/reports/customers/stats"),
       ]);
+
+      const topData = topRes.status === "fulfilled" ? (topRes.value.data.data ?? []) : [];
+      const regData = regRes.status === "fulfilled" ? (regRes.value.data.data ?? []) : [];
+      const statsData = statsRes.status === "fulfilled" ? statsRes.value.data.data : null;
+
+      console.log("[useCustomerReport] topSpenders:", topData.length, "regulars:", regData.length, "stats:", statsData);
+      if (topRes.status === "rejected") console.error("[useCustomerReport] top-spenders failed:", topRes.reason);
+      if (regRes.status === "rejected") console.error("[useCustomerReport] regulars failed:", regRes.reason);
+      if (statsRes.status === "rejected") console.error("[useCustomerReport] stats failed:", statsRes.reason);
+
       return {
-        topCustomers: (topRes.data.data ?? []).map(mapTopSpender),
-        regularCustomers: (regRes.data.data ?? []).map((c) => ({
+        topCustomers: topData.map(mapTopSpender),
+        regularCustomers: regData.map((c) => ({
           customerId: c.customerId,
           name: c.customerName ?? c.name ?? "Customer",
           purchaseCount: c.invoiceCount ?? c.purchaseCount ?? 0,
           totalSpent: c.totalSpent,
         })),
-        totalCustomers: undefined as number | undefined,
-        newCustomersThisMonth: undefined as number | undefined,
+        totalCustomers: statsData?.total ?? undefined as number | undefined,
+        newCustomersThisMonth: statsData?.newThisMonth ?? undefined as number | undefined,
       };
     },
   });

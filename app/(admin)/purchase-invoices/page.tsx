@@ -17,6 +17,12 @@ import Input from "@/components/ui/Input";
 import { PurchaseInvoice } from "@/types";
 import { useForm, useFieldArray } from "react-hook-form";
 import toast from "react-hot-toast";
+import ExportPdfButton from "@/components/ui/ExportPdfButton";
+import {
+  exportPurchaseInvoicesPdf,
+  exportSinglePurchaseInvoicePdf,
+  type PurchaseInvoiceExportRow,
+} from "@/lib/exportPdf";
 
 type InvoiceItemForm = {
   partId: string;
@@ -195,10 +201,35 @@ export default function PurchaseInvoicesPage() {
             Track inventory purchases from vendors
           </p>
         </div>
-        <Button onClick={openCreateModal} className="gap-2">
-          <Plus className="w-4 h-4" />
-          Create Invoice
-        </Button>
+        <div className="flex items-center gap-2">
+          {filteredInvoices.length > 0 && (
+            <ExportPdfButton
+              size="md"
+              label="Export All"
+              onExport={() =>
+                exportPurchaseInvoicesPdf(
+                  filteredInvoices.map((inv) => ({
+                    invoiceId: inv.invoiceId,
+                    vendorName: inv.vendorName,
+                    purchaseDate: (inv as PurchaseInvoice & { purchaseDate?: string }).purchaseDate ?? "",
+                    totalAmount: inv.totalAmount,
+                    notes: inv.notes,
+                    items: inv.items?.map((item) => ({
+                      partName: item.partName,
+                      quantity: item.quantity,
+                      unitPrice: item.unitPrice,
+                      lineTotal: item.lineTotal,
+                    })),
+                  }))
+                )
+              }
+            />
+          )}
+          <Button onClick={openCreateModal} className="gap-2">
+            <Plus className="w-4 h-4" />
+            Create Invoice
+          </Button>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -512,13 +543,35 @@ export default function PurchaseInvoicesPage() {
               </span>
             </div>
 
-            <Button
-              variant="outline"
-              onClick={() => setViewInvoice(null)}
-              className="w-full"
-            >
-              Close
-            </Button>
+            <div className="flex gap-3">
+              <ExportPdfButton
+                size="md"
+                label="Export PDF"
+                onExport={() =>
+                  exportSinglePurchaseInvoicePdf({
+                    invoiceId: viewInvoice.invoiceId,
+                    vendorName: viewInvoice.vendorName,
+                    purchaseDate: viewInvoice.purchaseDate,
+                    totalAmount: viewInvoice.totalAmount,
+                    notes: viewInvoice.notes,
+                    items: viewInvoice.items?.map((item) => ({
+                      partName: item.partName,
+                      quantity: item.quantity,
+                      unitPrice: item.unitPrice,
+                      lineTotal: item.lineTotal,
+                    })),
+                  })
+                }
+                className="flex-1"
+              />
+              <Button
+                variant="outline"
+                onClick={() => setViewInvoice(null)}
+                className="flex-1"
+              >
+                Close
+              </Button>
+            </div>
           </div>
         )}
       </Modal>

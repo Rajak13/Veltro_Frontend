@@ -1,23 +1,24 @@
 "use client";
 
-// Feature — Staff Appointment Management
-// Staff can view all appointments and update their status (Confirm, Complete, Cancel)
-
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import PageHeader from "@/components/layout/PageHeader";
 import Badge, { statusVariant } from "@/components/ui/Badge";
 import Spinner from "@/components/ui/Spinner";
 import Button from "@/components/ui/Button";
+import Pagination from "@/components/ui/Pagination";
 import ListFilters from "@/components/filters/ListFilters";
 import { useStaffAppointments, useUpdateAppointmentStatus } from "@/hooks/useAppointments";
 import { filterBySearch } from "@/lib/invoices";
 import { formatAppointmentStatus } from "@/lib/status";
-import { Car, User, Check, X, Clock, CalendarCheck } from "lucide-react";
+import { Car, User, Check, X, CalendarCheck } from "lucide-react";
 import toast from "react-hot-toast";
+
+const PAGE_SIZE = 10;
 
 export default function StaffAppointmentsPage() {
   const [statusFilter, setStatusFilter] = useState("");
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
 
   const { data: appointments, isLoading } = useStaffAppointments(statusFilter || undefined);
   const updateStatus = useUpdateAppointmentStatus();
@@ -25,6 +26,15 @@ export default function StaffAppointmentsPage() {
   const filtered = filterBySearch(appointments ?? [], search, (a) =>
     `${a.customerName} ${a.customerPhone ?? ""} ${a.vehicle} ${a.vehicleReg ?? ""} ${a.serviceType ?? ""} ${a.notes ?? ""}`
   );
+
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  const paged = useMemo(
+    () => filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
+    [filtered, page]
+  );
+
+  // Reset to page 1 when filters change
+  const handleFilterChange = (fn: () => void) => { fn(); setPage(1); };
 
   const setApptStatus = async (appointmentId: string, status: string) => {
     try {
@@ -54,7 +64,7 @@ export default function StaffAppointmentsPage() {
         ].map(({ label, count, color }) => (
           <button
             key={label}
-            onClick={() => setStatusFilter(statusFilter === label ? "" : label)}
+            onClick={() => handleFilterChange(() => setStatusFilter(statusFilter === label ? "" : label))}
             className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium border transition-all ${
               statusFilter === label ? color : "bg-white border-zinc-200 text-zinc-500 hover:border-zinc-300"
             }`}
@@ -71,10 +81,10 @@ export default function StaffAppointmentsPage() {
 
       <ListFilters
         search={search}
-        onSearchChange={setSearch}
+        onSearchChange={(v) => handleFilterChange(() => setSearch(v))}
         searchPlaceholder="Search customer, vehicle, service type…"
         status={statusFilter}
-        onStatusChange={setStatusFilter}
+        onStatusChange={(v) => handleFilterChange(() => setStatusFilter(v))}
         statusLabel="Status"
         statusOptions={[
           { value: "",           label: "All" },
@@ -83,7 +93,7 @@ export default function StaffAppointmentsPage() {
           { value: "Completed",  label: "Completed" },
           { value: "Cancelled",  label: "Cancelled" },
         ]}
-        onClear={() => { setSearch(""); setStatusFilter(""); }}
+        onClear={() => handleFilterChange(() => { setSearch(""); setStatusFilter(""); })}
       />
 
       {isLoading ? (
@@ -96,126 +106,122 @@ export default function StaffAppointmentsPage() {
           <p>No appointments found.</p>
         </div>
       ) : (
-        <div className="bg-white border border-zinc-200 rounded-2xl shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse">
-              <thead>
-                <tr className="border-b border-zinc-100">
-                  {["Date & Time", "Customer", "Vehicle", "Service Type", "Notes", "Status", "Actions"].map(h => (
-                    <th key={h} className="px-4 py-3 text-left text-[11px] font-semibold text-zinc-400 uppercase tracking-wider whitespace-nowrap">
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((appt) => {
-                  const date = new Date(appt.scheduledDate);
-                  const statusLabel = formatAppointmentStatus(appt.status);
-                  const isPending   = appt.status === "Pending";
-                  const isConfirmed = appt.status === "Confirmed";
-                  const isActive    = isPending || isConfirmed;
+        <>
+          <div className="bg-white border border-zinc-200 rounded-2xl shadow-sm overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="border-b border-zinc-100">
+                    {["Date & Time", "Customer", "Vehicle", "Service Type", "Notes", "Status", "Actions"].map(h => (
+                      <th key={h} className="px-4 py-3 text-left text-[11px] font-semibold text-zinc-400 uppercase tracking-wider whitespace-nowrap">
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {paged.map((appt) => {
+                    const date = new Date(appt.scheduledDate);
+                    const statusLabel = formatAppointmentStatus(appt.status);
+                    const isPending   = appt.status === "Pending";
+                    const isConfirmed = appt.status === "Confirmed";
+                    const isActive    = isPending || isConfirmed;
 
-                  return (
-                    <tr key={appt.appointmentId} className="border-b border-zinc-50 hover:bg-zinc-50/60 transition-colors last:border-b-0">
-                      {/* Date & Time */}
-                      <td className="px-4 py-3.5 whitespace-nowrap">
-                        <div className="text-[13px] font-semibold text-zinc-800">
-                          {date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                        </div>
-                        <div className="text-[11px] text-zinc-400 mt-0.5">
-                          {date.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}
-                        </div>
-                      </td>
-
-                      {/* Customer */}
-                      <td className="px-4 py-3.5">
-                        <div className="flex items-center gap-2">
-                          <div className="w-7 h-7 rounded-md bg-zinc-100 flex items-center justify-center flex-shrink-0">
-                            <User className="w-3.5 h-3.5 text-zinc-400" />
+                    return (
+                      <tr key={appt.appointmentId} className="border-b border-zinc-50 hover:bg-zinc-50/60 transition-colors last:border-b-0">
+                        <td className="px-4 py-3.5 whitespace-nowrap">
+                          <div className="text-[13px] font-semibold text-zinc-800">
+                            {date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                           </div>
-                          <div>
-                            <div className="text-[13px] font-medium text-zinc-800">{appt.customerName}</div>
-                            {appt.customerPhone && (
-                              <div className="text-[11px] text-zinc-400">{appt.customerPhone}</div>
-                            )}
+                          <div className="text-[11px] text-zinc-400 mt-0.5">
+                            {date.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}
                           </div>
-                        </div>
-                      </td>
-
-                      {/* Vehicle */}
-                      <td className="px-4 py-3.5">
-                        <div className="flex items-center gap-2">
-                          <Car className="w-3.5 h-3.5 text-zinc-400 flex-shrink-0" />
-                          <div>
-                            <div className="text-[13px] text-zinc-700">{appt.vehicle}</div>
-                            {appt.vehicleReg && (
-                              <div className="text-[11px] text-zinc-400">{appt.vehicleReg}</div>
-                            )}
+                        </td>
+                        <td className="px-4 py-3.5">
+                          <div className="flex items-center gap-2">
+                            <div className="w-7 h-7 rounded-md bg-zinc-100 flex items-center justify-center flex-shrink-0">
+                              <User className="w-3.5 h-3.5 text-zinc-400" />
+                            </div>
+                            <div>
+                              <div className="text-[13px] font-medium text-zinc-800">{appt.customerName}</div>
+                              {appt.customerPhone && (
+                                <div className="text-[11px] text-zinc-400">{appt.customerPhone}</div>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      </td>
-
-                      {/* Service Type */}
-                      <td className="px-4 py-3.5">
-                        <span className="text-[13px] text-zinc-600">{appt.serviceType || "—"}</span>
-                      </td>
-
-                      {/* Notes */}
-                      <td className="px-4 py-3.5 max-w-[180px]">
-                        <span className="text-[12px] text-zinc-500 line-clamp-2">{appt.notes || "—"}</span>
-                      </td>
-
-                      {/* Status */}
-                      <td className="px-4 py-3.5 whitespace-nowrap">
-                        <Badge label={statusLabel} variant={statusVariant(statusLabel)} />
-                      </td>
-
-                      {/* Actions */}
-                      <td className="px-4 py-3.5 whitespace-nowrap">
-                        {isActive ? (
-                          <div className="flex items-center gap-1.5">
-                            {isPending && (
+                        </td>
+                        <td className="px-4 py-3.5">
+                          <div className="flex items-center gap-2">
+                            <Car className="w-3.5 h-3.5 text-zinc-400 flex-shrink-0" />
+                            <div>
+                              <div className="text-[13px] text-zinc-700">{appt.vehicle}</div>
+                              {appt.vehicleReg && (
+                                <div className="text-[11px] text-zinc-400">{appt.vehicleReg}</div>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3.5">
+                          <span className="text-[13px] text-zinc-600">{appt.serviceType || "—"}</span>
+                        </td>
+                        <td className="px-4 py-3.5 max-w-[180px]">
+                          <span className="text-[12px] text-zinc-500 line-clamp-2">{appt.notes || "—"}</span>
+                        </td>
+                        <td className="px-4 py-3.5 whitespace-nowrap">
+                          <Badge label={statusLabel} variant={statusVariant(statusLabel)} />
+                        </td>
+                        <td className="px-4 py-3.5 whitespace-nowrap">
+                          {isActive ? (
+                            <div className="flex items-center gap-1.5">
+                              {isPending && (
+                                <Button
+                                  size="sm"
+                                  onClick={() => setApptStatus(appt.appointmentId, "Confirmed")}
+                                  disabled={updateStatus.isPending}
+                                  className="text-[11px]"
+                                >
+                                  <Check className="w-3 h-3" /> Confirm
+                                </Button>
+                              )}
+                              {isConfirmed && (
+                                <Button
+                                  size="sm"
+                                  onClick={() => setApptStatus(appt.appointmentId, "Completed")}
+                                  disabled={updateStatus.isPending}
+                                  className="text-[11px]"
+                                >
+                                  <CalendarCheck className="w-3 h-3" /> Complete
+                                </Button>
+                              )}
                               <Button
                                 size="sm"
-                                onClick={() => setApptStatus(appt.appointmentId, "Confirmed")}
+                                variant="outline"
+                                onClick={() => setApptStatus(appt.appointmentId, "Cancelled")}
                                 disabled={updateStatus.isPending}
-                                className="text-[11px]"
+                                className="text-red-600 border-red-200 hover:bg-red-50 text-[11px]"
                               >
-                                <Check className="w-3 h-3" /> Confirm
+                                <X className="w-3 h-3" /> Cancel
                               </Button>
-                            )}
-                            {isConfirmed && (
-                              <Button
-                                size="sm"
-                                onClick={() => setApptStatus(appt.appointmentId, "Completed")}
-                                disabled={updateStatus.isPending}
-                                className="text-[11px]"
-                              >
-                                <CalendarCheck className="w-3 h-3" /> Complete
-                              </Button>
-                            )}
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => setApptStatus(appt.appointmentId, "Cancelled")}
-                              disabled={updateStatus.isPending}
-                              className="text-red-600 border-red-200 hover:bg-red-50 text-[11px]"
-                            >
-                              <X className="w-3 h-3" /> Cancel
-                            </Button>
-                          </div>
-                        ) : (
-                          <span className="text-[11px] text-zinc-300">—</span>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                            </div>
+                          ) : (
+                            <span className="text-[11px] text-zinc-300">—</span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            totalCount={filtered.length}
+            pageSize={PAGE_SIZE}
+            onPageChange={setPage}
+          />
+        </>
       )}
     </div>
   );

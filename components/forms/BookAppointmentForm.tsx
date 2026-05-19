@@ -5,34 +5,39 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import Button from "@/components/ui/Button";
-import { useCreateAppointment } from "@/hooks/useAppointments";
-import { useBookedSlots, ALL_SLOTS, SLOT_START } from "@/hooks/useAppointments";
+import { useCreateAppointment, useBookedSlots, ALL_SLOTS, SLOT_START } from "@/hooks/useAppointments";
 import { useMyProfile } from "@/hooks/useCustomers";
 import toast from "react-hot-toast";
-import { Clock, AlertCircle } from "lucide-react";
+import { Clock, AlertCircle, Ban } from "lucide-react";
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+const MAX_CAPACITY = 5;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-/** Format a 0-23 hour number as "8:00 AM" */
 function formatHour(h: number): string {
   const period = h < 12 ? "AM" : "PM";
   const display = h % 12 === 0 ? 12 : h % 12;
   return `${display}:00 ${period}`;
 }
 
-/** Returns the minimum bookable date (today + 1 day) as a YYYY-MM-DD string */
 function minBookableDate(): string {
   const d = new Date();
   d.setDate(d.getDate() + 1);
   return d.toISOString().split("T")[0];
 }
 
-/** Returns true if the given date string is at least 24 hours from now */
 function isAtLeast24HoursAway(dateStr: string, hour: number): boolean {
   if (!dateStr) return false;
   const [y, m, day] = dateStr.split("-").map(Number);
   const slotTime = new Date(y, m - 1, day, hour, 0, 0);
   return slotTime.getTime() - Date.now() >= 24 * 60 * 60 * 1000;
+}
+
+function isSundayDate(dateStr: string): boolean {
+  if (!dateStr) return false;
+  const [y, m, day] = dateStr.split("-").map(Number);
+  return new Date(y, m - 1, day).getDay() === 0;
 }
 
 // ─── Schema ───────────────────────────────────────────────────────────────────
@@ -62,33 +67,32 @@ export default function BookAppointmentForm({ onSuccess }: Props) {
     watch,
     setValue,
     formState: { errors },
-  } = useForm<FormData>({
-    resolver: zodResolver(schema) as never,
-  });
+  } = useForm<FormData>({ resolver: zodResolver(schema) as never });
 
   const selectedDate = watch("date");
   const selectedHour = watch("hour");
 
-  // Fetch booked slots whenever the date changes
-  const { data: bookedSlots = [], isFetching: loadingSlots } = useBookedSlots(
-    selectedDate || null
+  const isSunday = selectedDate ? isSundayDate(selectedDate) : false;
+
+  const { data: slotData, isFetching: loadingSlots } = useBookedSlots(
+    selectedDate && !isSunday ? selectedDate : null
   );
 
-  // Slots that are unavailable: already booked OR within 24 hours
-  const unavailableSlots = useMemo(() => {
-    return new Set(
-      ALL_SLOTS.filter(
-        (h) => bookedSlots.includes(h) || !isAtLeast24HoursAway(selectedDate, h)
-      )
-    );
-  }, [bookedSlots, selectedDate]);
+  // For each slot: is it disabled and why?
+  const slotInfo = useMemo(() => {
+    return ALL_SLOTS.map((h) => {
+      const count = slotData?.slotCounts?.[h] ?? 0;
+      const remaining = MAX_CAPACITY - count;
+      const tooSoon = !isAtLeast24HoursAway(selectedDate, h);
+      const full = remaining <= 0;
+      const disabled = isSunday || full || tooSoon;
+      return { h, count, remaining, tooSoon, full, disabled };
+    });
+  }, [slotData, selectedDate, isSunday]);
 
   const vehicles = profile?.vehicles ?? [];
 
   const onSubmit = async (data: FormData) => {
-    // Build a local datetime string that preserves the intended hour.
-    // Format: "YYYY-MM-DDTHH:00:00" — no timezone suffix so the backend
-    // receives the local time and can read the hour directly from it.
     const pad = (n: number) => String(n).padStart(2, "0");
     const scheduledDate = `${data.date}T${pad(data.hour)}:00:00`;
 
@@ -103,10 +107,7 @@ export default function BookAppointmentForm({ onSuccess }: Props) {
       onSuccess?.();
     } catch (error: unknown) {
       const err = error as { response?: { data?: { message?: string; title?: string } } };
-      const msg =
-        err.response?.data?.message ||
-        err.response?.data?.title ||
-        "Failed to book appointment";
+      const msg = err.response?.data?.message || err.response?.data?.title || "Failed to book appointment";
       toast.error(msg);
     }
   };
@@ -118,9 +119,7 @@ export default function BookAppointmentForm({ onSuccess }: Props) {
         <div>
           <label className="text-sm font-medium text-zinc-700 block mb-1.5">Vehicle</label>
           {loadingProfile ? (
-            <div className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm text-zinc-400">
-              Loading vehicles…
-            </div>
+            <div className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm text-zinc-400">Loading vehicles…</div>
           ) : vehicles.length === 0 ? (
             <div className="w-full rounded-lg border border-orange-200 bg-orange-50 px-3 py-2 text-sm text-orange-600">
               No vehicles found. Add one in your profile first.
@@ -135,16 +134,13 @@ export default function BookAppointmentForm({ onSuccess }: Props) {
                 const id = String(v.vehicleId ?? "");
                 return (
                   <option key={id} value={id}>
-                    {v.year} {v.make} {v.model}
-                    {v.registrationNumber ? ` — ${v.registrationNumber}` : ""}
+                    {v.year} {v.make} {v.model}{v.registrationNumber ? ` — ${v.registrationNumber}` : ""}
                   </option>
                 );
               })}
             </select>
           )}
-          {errors.vehicleId && (
-            <p className="text-xs text-red-500 mt-1">{errors.vehicleId.message}</p>
-          )}
+          {errors.vehicleId && <p className="text-xs text-red-500 mt-1">{errors.vehicleId.message}</p>}
         </div>
 
         <div>
@@ -161,9 +157,7 @@ export default function BookAppointmentForm({ onSuccess }: Props) {
             <option value="General Inspection">General Inspection</option>
             <option value="Other">Other</option>
           </select>
-          {errors.serviceType && (
-            <p className="text-xs text-red-500 mt-1">{errors.serviceType.message}</p>
-          )}
+          {errors.serviceType && <p className="text-xs text-red-500 mt-1">{errors.serviceType.message}</p>}
         </div>
       </div>
 
@@ -172,27 +166,30 @@ export default function BookAppointmentForm({ onSuccess }: Props) {
         <label className="text-sm font-medium text-zinc-700 block mb-1.5">
           Preferred Date
           <span className="ml-1.5 text-[11px] font-normal text-zinc-400">
-            (must be at least 24 hours from now)
+            (at least 24 hours ahead · closed Sundays)
           </span>
         </label>
         <input
           type="date"
           min={minBookableDate()}
           {...register("date", {
-            onChange: () => {
-              // Clear selected slot when date changes
-              setValue("hour", undefined as never);
-            },
+            onChange: () => setValue("hour", undefined as never),
           })}
           className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm text-zinc-900 outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
         />
-        {errors.date && (
-          <p className="text-xs text-red-500 mt-1">{errors.date.message}</p>
+        {errors.date && <p className="text-xs text-red-500 mt-1">{errors.date.message}</p>}
+
+        {/* Sunday warning */}
+        {isSunday && (
+          <div className="mt-2 flex items-center gap-2 px-3 py-2 rounded-lg bg-red-50 border border-red-100 text-[12px] text-red-700">
+            <Ban className="w-3.5 h-3.5 flex-shrink-0" />
+            The garage is closed on Sundays. Please choose a different day.
+          </div>
         )}
       </div>
 
       {/* Time slot grid */}
-      {selectedDate && (
+      {selectedDate && !isSunday && (
         <div>
           <div className="flex items-center justify-between mb-2">
             <label className="text-sm font-medium text-zinc-700 flex items-center gap-1.5">
@@ -209,11 +206,13 @@ export default function BookAppointmentForm({ onSuccess }: Props) {
             control={control}
             render={({ field }) => (
               <div className="grid grid-cols-5 gap-2">
-                {ALL_SLOTS.map((h) => {
-                  const booked = bookedSlots.includes(h);
-                  const tooSoon = !isAtLeast24HoursAway(selectedDate, h);
-                  const disabled = booked || tooSoon;
+                {slotInfo.map(({ h, remaining, full, tooSoon, disabled }) => {
                   const selected = field.value === h;
+                  // Colour the capacity indicator
+                  const capacityColor =
+                    remaining === 0 ? "bg-red-400" :
+                    remaining <= 2 ? "bg-amber-400" :
+                    "bg-green-400";
 
                   return (
                     <button
@@ -221,6 +220,11 @@ export default function BookAppointmentForm({ onSuccess }: Props) {
                       type="button"
                       disabled={disabled}
                       onClick={() => !disabled && field.onChange(h)}
+                      title={
+                        full     ? "Fully booked" :
+                        tooSoon  ? "Must book 24h in advance" :
+                        `${remaining} spot${remaining !== 1 ? "s" : ""} left`
+                      }
                       className={[
                         "relative py-2 px-1 rounded-lg text-[12px] font-medium border transition-all text-center",
                         selected
@@ -229,17 +233,19 @@ export default function BookAppointmentForm({ onSuccess }: Props) {
                           ? "bg-zinc-50 border-zinc-100 text-zinc-300 cursor-not-allowed"
                           : "bg-white border-zinc-200 text-zinc-700 hover:border-orange-300 hover:bg-orange-50 cursor-pointer",
                       ].join(" ")}
-                      title={
-                        booked
-                          ? "This slot is already booked"
-                          : tooSoon
-                          ? "Must book at least 24 hours in advance"
-                          : formatHour(h)
-                      }
                     >
                       {formatHour(h)}
-                      {booked && (
-                        <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-red-400 border border-white" />
+                      {/* Capacity dot */}
+                      {!tooSoon && (
+                        <span
+                          className={`absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full border border-white ${capacityColor}`}
+                        />
+                      )}
+                      {/* Remaining spots label */}
+                      {!disabled && !selected && (
+                        <div className="text-[9px] text-zinc-400 mt-0.5 leading-none">
+                          {remaining}/{MAX_CAPACITY}
+                        </div>
                       )}
                     </button>
                   );
@@ -249,18 +255,18 @@ export default function BookAppointmentForm({ onSuccess }: Props) {
           />
 
           {/* Legend */}
-          <div className="flex items-center gap-4 mt-2.5 text-[11px] text-zinc-400">
+          <div className="flex items-center gap-4 mt-2.5 text-[11px] text-zinc-400 flex-wrap">
             <span className="flex items-center gap-1">
-              <span className="w-3 h-3 rounded bg-orange-500 inline-block" />
-              Selected
+              <span className="w-2.5 h-2.5 rounded-full bg-green-400 inline-block" /> Available
             </span>
             <span className="flex items-center gap-1">
-              <span className="w-3 h-3 rounded bg-zinc-100 border border-zinc-200 inline-block" />
-              Available
+              <span className="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block" /> Filling up
             </span>
             <span className="flex items-center gap-1">
-              <span className="w-3 h-3 rounded bg-zinc-50 border border-zinc-100 inline-block" />
-              Unavailable
+              <span className="w-2.5 h-2.5 rounded-full bg-red-400 inline-block" /> Full
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="w-2.5 h-2.5 rounded-full bg-orange-500 inline-block" /> Selected
             </span>
           </div>
 
@@ -286,8 +292,8 @@ export default function BookAppointmentForm({ onSuccess }: Props) {
         />
       </div>
 
-      {/* Summary */}
-      {selectedDate && selectedHour !== undefined && (
+      {/* Booking summary */}
+      {selectedDate && !isSunday && selectedHour !== undefined && (
         <div className="p-3 rounded-xl bg-orange-50 border border-orange-100 text-[12px] text-orange-800">
           <span className="font-semibold">Booking summary: </span>
           {new Date(
@@ -296,12 +302,13 @@ export default function BookAppointmentForm({ onSuccess }: Props) {
             ) as [number, number, number]),
             selectedHour
           ).toLocaleDateString("en-US", {
-            weekday: "long",
-            year: "numeric",
-            month: "long",
-            day: "numeric",
+            weekday: "long", year: "numeric", month: "long", day: "numeric",
           })}{" "}
           at {formatHour(selectedHour)}
+          {" · "}
+          {(slotInfo.find(s => s.h === selectedHour)?.remaining ?? MAX_CAPACITY) - 1} other spot{
+            (slotInfo.find(s => s.h === selectedHour)?.remaining ?? MAX_CAPACITY) - 1 !== 1 ? "s" : ""
+          } remaining after this booking
         </div>
       )}
 
@@ -309,7 +316,7 @@ export default function BookAppointmentForm({ onSuccess }: Props) {
         <Button
           type="submit"
           loading={isPending}
-          disabled={vehicles.length === 0}
+          disabled={vehicles.length === 0 || isSunday}
           className="w-full sm:w-auto"
         >
           Book Appointment

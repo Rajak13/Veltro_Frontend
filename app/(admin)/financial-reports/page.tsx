@@ -3,7 +3,7 @@
 // Financial Reports — Admin
 // GET /api/reports/financial?period=daily|monthly|yearly
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import PageHeader from "@/components/layout/PageHeader";
 import Spinner from "@/components/ui/Spinner";
@@ -15,7 +15,11 @@ import { exportFinancialReportPdf } from "@/lib/exportPdf";
 type Period = "daily" | "monthly" | "yearly";
 
 export default function AdminReportsPage() {
-  const [period, setPeriod] = useState<Period>("monthly");
+  const searchParams = useSearchParams();
+  const initialPeriod = (searchParams.get("period") as Period | null);
+  const [period, setPeriod] = useState<Period>(
+    initialPeriod === "daily" || initialPeriod === "yearly" ? initialPeriod : "monthly"
+  );
   const { data: report, isLoading } = useFinancialReport(period);
 
   const periods: { value: Period; label: string }[] = [

@@ -37,10 +37,11 @@ const navGroups: NavGroup[] = [
   {
     label: "Sales", id: "sale", icon: Receipt,
     children: [
-      { label: "New Sale",       href: ROUTES.STAFF_SALES_INVOICES + "?action=new" },
-      { label: "Sales History",  href: ROUTES.STAFF_SALES_INVOICES },
-      { label: "Create Invoice", href: ROUTES.STAFF_SALES_INVOICES + "?action=invoice" },
-      { label: "Part Requests",  href: ROUTES.STAFF_PART_REQUESTS },
+      { label: "New Sale",          href: ROUTES.STAFF_SALES_INVOICES + "?action=new" },
+      { label: "Sales History",     href: ROUTES.STAFF_SALES_INVOICES },
+      { label: "Create Invoice",    href: ROUTES.STAFF_SALES_INVOICES + "?action=invoice" },
+      { label: "Part Requests",     href: ROUTES.STAFF_PART_REQUESTS },
+      { label: "Credit Management", href: ROUTES.STAFF_CREDIT_MANAGEMENT },
     ],
   },
   {
