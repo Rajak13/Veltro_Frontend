@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { ROUTES } from "@/constants/routes";
 import { useState, useEffect } from "react";
+import { useLowStockParts } from "@/hooks/useParts";
 
 interface NavGroup {
   label: string;
@@ -68,7 +69,7 @@ const navGroups: NavGroup[] = [
 ];
 
 const singleItems: NavItem[] = [
-  { label: "Low Stock Alerts", href: "/parts?filter=low-stock", icon: AlertTriangle, badge: 3 },
+  { label: "Low Stock Alerts", href: "/parts?filter=low-stock", icon: AlertTriangle },
   { label: "Customers",        href: ROUTES.ADMIN_CUSTOMERS,    icon: Contact },
   { label: "Review Moderation", href: ROUTES.ADMIN_REVIEW_MODERATION, icon: Star },
   { label: "Inventory Report", href: ROUTES.ADMIN_INVENTORY_REPORT, icon: Box },
@@ -80,6 +81,10 @@ export default function AdminSidebar() {
   const { logout, user } = useAuth();
   const [openGroup, setOpenGroup] = useState<string | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  // Live low stock count
+  const { data: lowStockData } = useLowStockParts(1, 100);
+  const lowStockCount = lowStockData?.totalCount ?? 0;
 
   const toggle = (id: string) => setOpenGroup(prev => prev === id ? null : id);
 
@@ -160,7 +165,7 @@ export default function AdminSidebar() {
           {navGroups.slice(0, 3).map(group => (
             <GroupItem key={group.id} group={group} open={openGroup === group.id} active={isGroupActive(group)} onToggle={() => toggle(group.id)} pathname={pathname} />
           ))}
-          <NavLink href={singleItems[0].href} icon={singleItems[0].icon} label={singleItems[0].label} badge={singleItems[0].badge} pathname={pathname} />
+          <NavLink href={singleItems[0].href} icon={singleItems[0].icon} label={singleItems[0].label} badge={lowStockCount > 0 ? lowStockCount : undefined} pathname={pathname} />
 
           {/* People */}
           <p className="px-5 pt-3 pb-0.5 text-[10px] font-semibold text-zinc-300 uppercase tracking-widest">People</p>

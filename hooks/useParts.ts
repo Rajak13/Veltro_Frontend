@@ -65,3 +65,20 @@ export const useDeletePart = () => {
     },
   });
 };
+
+export const useLowStockParts = (page = 1, pageSize = 100) =>
+  useQuery({
+    queryKey: ["parts", "low-stock", page, pageSize],
+    queryFn: async () => {
+      const res = await api.get<ApiResponse<PagedResult<Part>>>("/parts/low-stock", {
+        params: { page, pageSize },
+      });
+      const pagedResult = res.data.data;
+      return {
+        data: pagedResult?.items || [],
+        totalCount: pagedResult?.totalCount || 0,
+        totalPages: pagedResult?.totalPages || 1,
+      };
+    },
+    staleTime: 30_000, // refresh every 30s is enough for a sidebar badge
+  });
