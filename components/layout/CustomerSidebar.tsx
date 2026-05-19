@@ -11,6 +11,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { ROUTES } from "@/constants/routes";
 import { useState } from "react";
 import NotificationBell from "@/components/ui/NotificationBell";
+import { useMyAppointments } from "@/hooks/useAppointments";
 
 interface NavGroup {
   label: string;
@@ -43,7 +44,7 @@ const singleItems: NavItem[] = [
   { label: "Purchase History",       href: ROUTES.CUSTOMER_HISTORY,      icon: ShoppingBag },
   { label: "Request Unavailable Part", href: ROUTES.CUSTOMER_PART_REQUESTS, icon: PackagePlus },
   { label: "Book Appointment",       href: ROUTES.CUSTOMER_APPOINTMENTS, icon: CalendarPlus },
-  { label: "My Appointments",        href: ROUTES.CUSTOMER_APPOINTMENTS, icon: CalendarCheck, badge: 1 },
+  { label: "My Appointments",        href: ROUTES.CUSTOMER_APPOINTMENTS, icon: CalendarCheck },
   { label: "Submit Review",          href: ROUTES.CUSTOMER_REVIEWS,      icon: Star },
   { label: "My Profile",             href: ROUTES.CUSTOMER_PROFILE,      icon: User },
   { label: "Loyalty Rewards",        href: ROUTES.CUSTOMER_PROFILE,      icon: Gift },
@@ -53,6 +54,12 @@ export default function CustomerSidebar() {
   const pathname = usePathname();
   const { logout, user } = useAuth();
   const [openGroup, setOpenGroup] = useState<string | null>(null);
+
+  // Live appointment count — pending or confirmed only
+  const { data: appointments } = useMyAppointments();
+  const upcomingCount = (appointments ?? []).filter(
+    (a) => a.status === "Pending" || a.status === "Confirmed"
+  ).length;
 
   const toggle = (id: string) => setOpenGroup(prev => prev === id ? null : id);
 
@@ -89,7 +96,7 @@ export default function CustomerSidebar() {
         {/* Service */}
         <p className="px-5 pt-3 pb-0.5 text-[10px] font-semibold text-zinc-300 uppercase tracking-widest">Service</p>
         <NavLink item={singleItems[5]} pathname={pathname} />
-        <NavLink item={singleItems[6]} pathname={pathname} />
+        <NavLink item={{ ...singleItems[6], badge: upcomingCount > 0 ? upcomingCount : undefined }} pathname={pathname} />
         <NavLink item={singleItems[7]} pathname={pathname} />
 
         {/* Account */}

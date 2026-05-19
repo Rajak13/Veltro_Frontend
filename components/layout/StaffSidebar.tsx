@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { ROUTES } from "@/constants/routes";
 import { useState, useEffect } from "react";
+import { useOverdueCredits } from "@/hooks/useReports";
 
 interface NavGroup {
   label: string;
@@ -49,7 +50,7 @@ const navGroups: NavGroup[] = [
     children: [
       { label: "Top Spenders",      href: ROUTES.STAFF_REPORTS + "?tab=top-spenders" },
       { label: "Regular Customers", href: ROUTES.STAFF_REPORTS + "?tab=regular" },
-      { label: "Overdue Credits",   href: ROUTES.STAFF_REPORTS + "?tab=overdue", badge: 5 },
+      { label: "Overdue Credits",   href: ROUTES.STAFF_REPORTS + "?tab=overdue" },
     ],
   },
 ];
@@ -65,6 +66,10 @@ export default function StaffSidebar() {
   const { logout, user } = useAuth();
   const [openGroup, setOpenGroup] = useState<string | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  // Live overdue credits count
+  const { data: overdueData } = useOverdueCredits();
+  const overdueCount = overdueData?.length ?? 0;
 
   const toggle = (id: string) => setOpenGroup(prev => prev === id ? null : id);
 
@@ -151,7 +156,20 @@ export default function StaffSidebar() {
 
           {/* Reports */}
           <p className="px-5 pt-3 pb-0.5 text-[10px] font-semibold text-zinc-300 uppercase tracking-widest">Reports</p>
-          <GroupItem group={navGroups[2]} open={openGroup === navGroups[2].id} active={isGroupActive(navGroups[2])} onToggle={() => toggle(navGroups[2].id)} pathname={pathname} />
+          <GroupItem
+            group={{
+              ...navGroups[2],
+              children: navGroups[2].children.map((c) =>
+                c.label === "Overdue Credits"
+                  ? { ...c, badge: overdueCount > 0 ? overdueCount : undefined }
+                  : c
+              ),
+            }}
+            open={openGroup === navGroups[2].id}
+            active={isGroupActive(navGroups[2])}
+            onToggle={() => toggle(navGroups[2].id)}
+            pathname={pathname}
+          />
 
           {/* Service */}
           <p className="px-5 pt-3 pb-0.5 text-[10px] font-semibold text-zinc-300 uppercase tracking-widest">Service</p>
