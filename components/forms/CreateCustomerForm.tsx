@@ -8,10 +8,10 @@ import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 import { useCreateCustomer } from "@/hooks/useCustomers";
 import toast from "react-hot-toast";
-import { ChevronDown, ChevronUp, Car } from "lucide-react";
-
-// ─── Schema ───────────────────────────────────────────────────────────────────
-// Number inputs are kept as strings in the schema; we cast them in onSubmit.
+import {
+  ChevronDown, ChevronUp, Car, User, Mail, Lock, Phone, MapPin,
+  Calendar, Hash, Gauge,
+} from "lucide-react";
 
 const schema = z.object({
   fullName: z.string().min(1, "Full name is required"),
@@ -19,7 +19,6 @@ const schema = z.object({
   password: z.string().min(6, "Password must be at least 6 characters"),
   phone:    z.string().min(1, "Phone is required"),
   address:  z.string().min(1, "Address is required"),
-  // Vehicle (all optional)
   vehicleMake:               z.string().optional(),
   vehicleModel:              z.string().optional(),
   vehicleYear:               z.string().optional(),
@@ -30,8 +29,6 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 interface Props { onSuccess?: () => void; }
-
-// ─── Component ────────────────────────────────────────────────────────────────
 
 export default function CreateCustomerForm({ onSuccess }: Props) {
   const { mutateAsync, isPending } = useCreateCustomer();
@@ -53,7 +50,6 @@ export default function CreateCustomerForm({ onSuccess }: Props) {
         address:  data.address,
       };
 
-      // Only attach vehicle if the section is open and make/model are filled
       if (showVehicle && data.vehicleMake && data.vehicleModel) {
         payload.vehicle = {
           make:               data.vehicleMake,
@@ -74,14 +70,12 @@ export default function CreateCustomerForm({ onSuccess }: Props) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      {/* Customer fields */}
-      <Input label="Full Name" {...register("fullName")} error={errors.fullName?.message} />
-      <Input label="Email"     {...register("email")}    error={errors.email?.message}    type="email" />
-      <Input label="Password"  {...register("password")} error={errors.password?.message} type="password" />
-      <Input label="Phone"     {...register("phone")}    error={errors.phone?.message} />
-      <Input label="Address"   {...register("address")}  error={errors.address?.message} />
+      <Input label="Full Name" icon={User} {...register("fullName")} error={errors.fullName?.message} />
+      <Input label="Email" icon={Mail} type="email" {...register("email")} error={errors.email?.message} />
+      <Input label="Password" icon={Lock} type="password" showPasswordToggle {...register("password")} error={errors.password?.message} />
+      <Input label="Phone" icon={Phone} type="tel" {...register("phone")} error={errors.phone?.message} />
+      <Input label="Address" icon={MapPin} {...register("address")} error={errors.address?.message} />
 
-      {/* Optional vehicle section */}
       <div className="border border-zinc-200 rounded-xl overflow-hidden">
         <button
           type="button"
@@ -100,36 +94,14 @@ export default function CreateCustomerForm({ onSuccess }: Props) {
         {showVehicle && (
           <div className="p-4 space-y-3 border-t border-zinc-100">
             <div className="grid grid-cols-2 gap-3">
-              <Input
-                label="Make"
-                {...register("vehicleMake")}
-                placeholder="e.g. Toyota"
-              />
-              <Input
-                label="Model"
-                {...register("vehicleModel")}
-                placeholder="e.g. Corolla"
-              />
+              <Input label="Make" icon={Car} {...register("vehicleMake")} placeholder="e.g. Toyota" />
+              <Input label="Model" icon={Car} {...register("vehicleModel")} placeholder="e.g. Corolla" />
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <Input
-                label="Year"
-                {...register("vehicleYear")}
-                type="number"
-                placeholder="e.g. 2020"
-              />
-              <Input
-                label="Mileage (km)"
-                {...register("vehicleMileage")}
-                type="number"
-                placeholder="e.g. 45000"
-              />
+              <Input label="Year" icon={Calendar} {...register("vehicleYear")} type="number" placeholder="e.g. 2020" />
+              <Input label="Mileage (km)" icon={Gauge} {...register("vehicleMileage")} type="number" placeholder="e.g. 45000" />
             </div>
-            <Input
-              label="Registration Number"
-              {...register("vehicleRegistrationNumber")}
-              placeholder="e.g. BA 1 CHA 1234"
-            />
+            <Input label="Registration Number" icon={Hash} {...register("vehicleRegistrationNumber")} placeholder="e.g. BA 1 CHA 1234" />
           </div>
         )}
       </div>

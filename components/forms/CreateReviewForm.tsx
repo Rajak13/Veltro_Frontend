@@ -4,10 +4,11 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import Textarea from "@/components/ui/Textarea";
 import Button from "@/components/ui/Button";
 import { useCreateReview } from "@/hooks/useReviews";
+import { MessageSquare, Star } from "lucide-react";
 import toast from "react-hot-toast";
-import { Star } from "lucide-react";
 
 const schema = z.object({
   rating: z.number().min(1, "Please select a rating").max(5),
@@ -74,16 +75,14 @@ export default function CreateReviewForm({ onSuccess }: Props) {
         {errors.rating && <p className="text-xs text-red-500 mt-1">{errors.rating.message}</p>}
       </div>
 
-      <div>
-        <label className="text-sm font-medium text-zinc-700 block mb-1.5">Your Review</label>
-        <textarea
-          {...register("comment")}
-          rows={4}
-          placeholder="Share your experience with our service..."
-          className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 resize-none"
-        />
-        {errors.comment && <p className="text-xs text-red-500 mt-1">{errors.comment.message}</p>}
-      </div>
+      <Textarea
+        label="Your Review"
+        icon={MessageSquare}
+        rows={4}
+        {...register("comment")}
+        error={errors.comment?.message}
+        placeholder="Share your experience with our service..."
+      />
 
       <div className="flex justify-end gap-3 pt-2">
         <Button type="submit" loading={isPending}>Submit Review</Button>

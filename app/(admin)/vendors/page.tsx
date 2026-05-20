@@ -238,48 +238,43 @@ export default function VendorsPage() {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <Input
             label="Vendor Name *"
+            icon={Building2}
             placeholder="Enter vendor name"
             {...register("name", { required: "Vendor name is required" })}
             error={errors.name?.message}
           />
           <Input
             label="Contact Person"
+            icon={User}
             placeholder="Enter contact person name"
             {...register("contactPerson")}
           />
           <div className="grid grid-cols-2 gap-4">
-            <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-zinc-700">Phone</label>
-              <div className="flex items-center gap-2">
-                <span className="px-3 py-2 bg-zinc-100 border border-zinc-200 rounded-lg text-sm text-zinc-600 font-medium">
-                  +977
-                </span>
-                <input
-                  type="tel"
-                  placeholder="9800000000"
-                  className="flex-1 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 outline-none transition-all focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
-                  {...register("phone", {
-                    pattern: {
-                      value: /^\d{10}$/,
-                      message: "Phone must be exactly 10 digits"
-                    },
-                    minLength: {
-                      value: 10,
-                      message: "Phone must be exactly 10 digits"
-                    },
-                    maxLength: {
-                      value: 10,
-                      message: "Phone must be exactly 10 digits"
-                    }
-                  })}
-                />
-              </div>
-              {errors.phone && (
-                <p className="text-xs text-red-500">{errors.phone.message}</p>
-              )}
-            </div>
+            <Input
+              label="Phone"
+              icon={Phone}
+              type="tel"
+              prefix="+977"
+              placeholder="9800000000"
+              {...register("phone", {
+                pattern: {
+                  value: /^\d{10}$/,
+                  message: "Phone must be exactly 10 digits"
+                },
+                minLength: {
+                  value: 10,
+                  message: "Phone must be exactly 10 digits"
+                },
+                maxLength: {
+                  value: 10,
+                  message: "Phone must be exactly 10 digits"
+                }
+              })}
+              error={errors.phone?.message}
+            />
             <Input
               label="Email"
+              icon={Mail}
               type="email"
               placeholder="vendor@gmail.com"
               {...register("email", {
@@ -293,6 +288,7 @@ export default function VendorsPage() {
           </div>
           <Input
             label="Address"
+            icon={MapPin}
             placeholder="Enter vendor address"
             {...register("address")}
           />

@@ -9,7 +9,7 @@ import { filterByDateRange, filterBySearch } from "@/lib/invoices";
 import { usePurchaseInvoices, useCreatePurchaseInvoice } from "@/hooks/useInvoices";
 import { useVendors } from "@/hooks/useVendors";
 import { useParts } from "@/hooks/useParts";
-import { Plus, FileText, Eye, Trash2, ShoppingCart, DollarSign, TrendingUp, Package } from "lucide-react";
+import { Plus, FileText, Eye, Trash2, ShoppingCart, DollarSign, TrendingUp, Package, Layers, StickyNote } from "lucide-react";
 import Table, { Column } from "@/components/ui/Table";
 import Button from "@/components/ui/Button";
 import Modal from "@/components/ui/Modal";
@@ -383,6 +383,7 @@ export default function PurchaseInvoicesPage() {
                     </div>
                     <div>
                       <Input
+                        icon={Layers}
                         type="number"
                         placeholder="Qty"
                         {...register(`items.${index}.quantity`, {
@@ -394,6 +395,7 @@ export default function PurchaseInvoicesPage() {
                     </div>
                     <div>
                       <Input
+                        icon={DollarSign}
                         type="number"
                         step="0.01"
                         placeholder="Unit Price"
@@ -424,6 +426,7 @@ export default function PurchaseInvoicesPage() {
           {/* Notes */}
           <Input
             label="Notes"
+            icon={StickyNote}
             placeholder="Add any additional notes..."
             {...register("notes")}
           />

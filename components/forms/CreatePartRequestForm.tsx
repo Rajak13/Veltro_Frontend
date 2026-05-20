@@ -4,8 +4,10 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import Input from "@/components/ui/Input";
+import Textarea from "@/components/ui/Textarea";
 import Button from "@/components/ui/Button";
 import { useCreatePartRequest } from "@/hooks/usePartRequests";
+import { FileText, Package } from "lucide-react";
 import toast from "react-hot-toast";
 
 const schema = z.object({
@@ -39,25 +41,24 @@ export default function CreatePartRequestForm({ onSuccess }: Props) {
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <Input
         label="Part Name"
+        icon={Package}
         {...register("partName")}
         error={errors.partName?.message}
         placeholder="e.g., Front Brake Pads - Honda Civic 2020"
       />
-      
-      <div>
-        <label className="text-sm font-medium text-zinc-700 block mb-1.5">Description</label>
-        <textarea
-          {...register("description")}
-          rows={4}
-          placeholder="Provide details about the part you need (make, model, year, specifications)..."
-          className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 resize-none"
-        />
-        {errors.description && <p className="text-xs text-red-500 mt-1">{errors.description.message}</p>}
-      </div>
+
+      <Textarea
+        label="Description"
+        icon={FileText}
+        rows={4}
+        {...register("description")}
+        error={errors.description?.message}
+        placeholder="Provide details about the part you need (make, model, year, specifications)..."
+      />
 
       <div className="bg-blue-50 border border-blue-100 rounded-lg p-3">
         <p className="text-xs text-blue-700">
-          We'll notify you when the part is sourced and available for purchase.
+          We&apos;ll notify you when the part is sourced and available for purchase.
         </p>
       </div>
 

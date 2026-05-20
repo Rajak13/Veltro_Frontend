@@ -8,7 +8,7 @@ import ListFilters from "@/components/filters/ListFilters";
 import { filterBySearch } from "@/lib/invoices";
 import { useParts, useCreatePart, useUpdatePart, useDeletePart } from "@/hooks/useParts";
 import { useVendors } from "@/hooks/useVendors";
-import { Plus, Pencil, Trash2, Package, AlertTriangle, TrendingUp, DollarSign } from "lucide-react";
+import { Plus, Pencil, Trash2, Package, AlertTriangle, TrendingUp, DollarSign, FileText, Layers, Building2 } from "lucide-react";
 import Table, { Column } from "@/components/ui/Table";
 import Button from "@/components/ui/Button";
 import Modal from "@/components/ui/Modal";
@@ -336,18 +336,21 @@ export default function PartsPage() {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <Input
             label="Part Name *"
+            icon={Package}
             placeholder="Enter part name"
             {...register("name", { required: "Part name is required" })}
             error={errors.name?.message}
           />
           <Input
             label="Description"
+            icon={FileText}
             placeholder="Enter part description"
             {...register("description")}
           />
           <div className="grid grid-cols-2 gap-4">
             <Input
               label="Price (Rs.) *"
+              icon={DollarSign}
               type="number"
               step="0.01"
               placeholder="0.00"
@@ -359,6 +362,7 @@ export default function PartsPage() {
             />
             <Input
               label="Stock Quantity *"
+              icon={Layers}
               type="number"
               placeholder="0"
               {...register("stockQuantity", { 
@@ -371,6 +375,7 @@ export default function PartsPage() {
           <div className="grid grid-cols-2 gap-4">
             <Input
               label="Low Stock Threshold *"
+              icon={AlertTriangle}
               type="number"
               placeholder="10"
               {...register("lowStockThreshold", { 

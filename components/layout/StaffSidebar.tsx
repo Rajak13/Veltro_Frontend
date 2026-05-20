@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Users, Search, Receipt, BarChart3,
-  Calendar, Cog, LogOut, ChevronDown, X, Menu,
+  Calendar, Cog, LogOut, ChevronDown, X, Menu, User,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -59,6 +59,7 @@ const singleItems: NavItem[] = [
   { label: "Dashboard",     href: ROUTES.STAFF_DASHBOARD,    icon: LayoutDashboard },
   { label: "Quick Search",  href: ROUTES.STAFF_SEARCH,       icon: Search, kbd: "⌘K" },
   { label: "Appointments",  href: ROUTES.STAFF_APPOINTMENTS, icon: Calendar },
+  { label: "My Profile",    href: ROUTES.STAFF_PROFILE,       icon: User },
 ];
 
 export default function StaffSidebar() {
@@ -174,18 +175,21 @@ export default function StaffSidebar() {
           {/* Service */}
           <p className="px-5 pt-3 pb-0.5 text-[10px] font-semibold text-zinc-300 uppercase tracking-widest">Service</p>
           <NavLink href={singleItems[2].href} icon={singleItems[2].icon} label={singleItems[2].label} pathname={pathname} />
+          <NavLink href={singleItems[3].href} icon={singleItems[3].icon} label={singleItems[3].label} pathname={pathname} />
         </nav>
 
         {/* User footer */}
         <div className="p-3 border-t border-zinc-100">
-          <div className="flex items-center gap-2 p-2 rounded-lg bg-zinc-50 border border-zinc-100 cursor-pointer hover:bg-zinc-100 transition-colors group">
-            <div className="w-8 h-8 rounded-md bg-zinc-200 flex items-center justify-center text-xs font-bold text-zinc-500 flex-shrink-0">
-              {user?.name?.charAt(0).toUpperCase() ?? "S"}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[11px] font-semibold text-zinc-800 truncate leading-tight">{user?.name ?? "Staff"}</p>
-              <p className="text-[9px] text-zinc-400 truncate leading-tight mt-0.5">Staff — Sales</p>
-            </div>
+          <div className="flex items-center gap-2 p-2 rounded-lg bg-zinc-50 border border-zinc-100 hover:bg-zinc-100 transition-colors group">
+            <Link href={ROUTES.STAFF_PROFILE} className="flex items-center gap-2 flex-1 min-w-0">
+              <div className="w-8 h-8 rounded-md bg-zinc-200 flex items-center justify-center text-xs font-bold text-zinc-500 flex-shrink-0">
+                {user?.name?.charAt(0).toUpperCase() ?? "S"}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[11px] font-semibold text-zinc-800 truncate leading-tight">{user?.name ?? "Staff"}</p>
+                <p className="text-[9px] text-zinc-400 truncate leading-tight mt-0.5">My profile</p>
+              </div>
+            </Link>
             <button onClick={logout} title="Sign out" className="flex-shrink-0 p-1 hover:bg-zinc-200 rounded transition-colors">
               <LogOut className="w-3.5 h-3.5 text-zinc-400 group-hover:text-red-500 transition-colors" />
             </button>

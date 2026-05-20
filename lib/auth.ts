@@ -58,6 +58,18 @@ export const register = async (payload: RegisterPayload): Promise<AuthData> => {
   return normalise(res.data.data);
 };
 
+export interface ChangePasswordPayload {
+  currentPassword: string;
+  newPassword: string;
+}
+
+export const changePassword = async (payload: ChangePasswordPayload): Promise<void> => {
+  await api.put("/auth/change-password", {
+    currentPassword: payload.currentPassword,
+    newPassword: payload.newPassword,
+  });
+};
+
 export const logout = () => {
   // Handled by Zustand store + api interceptor
 };
