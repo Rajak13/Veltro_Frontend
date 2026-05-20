@@ -8,7 +8,10 @@ import Button from "@/components/ui/Button";
 import { useCreateAppointment, useBookedSlots, ALL_SLOTS, SLOT_START } from "@/hooks/useAppointments";
 import { useMyProfile } from "@/hooks/useCustomers";
 import toast from "react-hot-toast";
-import { Clock, AlertCircle, Ban } from "lucide-react";
+import Input from "@/components/ui/Input";
+import Select from "@/components/ui/Select";
+import Textarea from "@/components/ui/Textarea";
+import { Clock, AlertCircle, Ban, Car, Wrench, Calendar, StickyNote } from "lucide-react";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const MAX_CAPACITY = 5;
@@ -117,7 +120,6 @@ export default function BookAppointmentForm({ onSuccess }: Props) {
       {/* Vehicle + Service Type */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="text-sm font-medium text-zinc-700 block mb-1.5">Vehicle</label>
           {loadingProfile ? (
             <div className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm text-zinc-400">Loading vehicles…</div>
           ) : vehicles.length === 0 ? (
@@ -125,10 +127,7 @@ export default function BookAppointmentForm({ onSuccess }: Props) {
               No vehicles found. Add one in your profile first.
             </div>
           ) : (
-            <select
-              {...register("vehicleId")}
-              className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm text-zinc-900 outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
-            >
+            <Select label="Vehicle" icon={Car} {...register("vehicleId")} error={errors.vehicleId?.message}>
               <option value="">Select a vehicle…</option>
               {vehicles.map((v) => {
                 const id = String(v.vehicleId ?? "");
@@ -138,55 +137,38 @@ export default function BookAppointmentForm({ onSuccess }: Props) {
                   </option>
                 );
               })}
-            </select>
+            </Select>
           )}
-          {errors.vehicleId && <p className="text-xs text-red-500 mt-1">{errors.vehicleId.message}</p>}
         </div>
 
-        <div>
-          <label className="text-sm font-medium text-zinc-700 block mb-1.5">Service Type</label>
-          <select
-            {...register("serviceType")}
-            className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm text-zinc-900 outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
-          >
-            <option value="">Select service type…</option>
-            <option value="Oil Change">Oil Change</option>
-            <option value="Brake Service">Brake Service</option>
-            <option value="Tire Rotation">Tire Rotation</option>
-            <option value="Engine Tune-Up">Engine Tune-Up</option>
-            <option value="General Inspection">General Inspection</option>
-            <option value="Other">Other</option>
-          </select>
-          {errors.serviceType && <p className="text-xs text-red-500 mt-1">{errors.serviceType.message}</p>}
+        <Select label="Service Type" icon={Wrench} {...register("serviceType")} error={errors.serviceType?.message}>
+          <option value="">Select service type…</option>
+          <option value="Oil Change">Oil Change</option>
+          <option value="Brake Service">Brake Service</option>
+          <option value="Tire Rotation">Tire Rotation</option>
+          <option value="Engine Tune-Up">Engine Tune-Up</option>
+          <option value="General Inspection">General Inspection</option>
+          <option value="Other">Other</option>
+        </Select>
+      </div>
+
+      <Input
+        label="Preferred Date"
+        icon={Calendar}
+        type="date"
+        min={minBookableDate()}
+        hint="At least 24 hours ahead · closed Sundays"
+        {...register("date", {
+          onChange: () => setValue("hour", undefined as never),
+        })}
+        error={errors.date?.message}
+      />
+      {isSunday && (
+        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-red-50 border border-red-100 text-[12px] text-red-700">
+          <Ban className="w-3.5 h-3.5 flex-shrink-0" />
+          The garage is closed on Sundays. Please choose a different day.
         </div>
-      </div>
-
-      {/* Date picker */}
-      <div>
-        <label className="text-sm font-medium text-zinc-700 block mb-1.5">
-          Preferred Date
-          <span className="ml-1.5 text-[11px] font-normal text-zinc-400">
-            (at least 24 hours ahead · closed Sundays)
-          </span>
-        </label>
-        <input
-          type="date"
-          min={minBookableDate()}
-          {...register("date", {
-            onChange: () => setValue("hour", undefined as never),
-          })}
-          className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm text-zinc-900 outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
-        />
-        {errors.date && <p className="text-xs text-red-500 mt-1">{errors.date.message}</p>}
-
-        {/* Sunday warning */}
-        {isSunday && (
-          <div className="mt-2 flex items-center gap-2 px-3 py-2 rounded-lg bg-red-50 border border-red-100 text-[12px] text-red-700">
-            <Ban className="w-3.5 h-3.5 flex-shrink-0" />
-            The garage is closed on Sundays. Please choose a different day.
-          </div>
-        )}
-      </div>
+      )}
 
       {/* Time slot grid */}
       {selectedDate && !isSunday && (
@@ -279,18 +261,13 @@ export default function BookAppointmentForm({ onSuccess }: Props) {
         </div>
       )}
 
-      {/* Notes */}
-      <div>
-        <label className="text-sm font-medium text-zinc-700 block mb-1.5">
-          Notes <span className="font-normal text-zinc-400">(optional)</span>
-        </label>
-        <textarea
-          {...register("notes")}
-          rows={2}
-          placeholder="Any additional details about the service…"
-          className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 resize-none"
-        />
-      </div>
+      <Textarea
+        label="Notes (optional)"
+        icon={StickyNote}
+        {...register("notes")}
+        rows={2}
+        placeholder="Any additional details about the service…"
+      />
 
       {/* Booking summary */}
       {selectedDate && !isSunday && selectedHour !== undefined && (

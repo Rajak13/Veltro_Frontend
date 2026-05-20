@@ -29,6 +29,15 @@ export default function ReviewsPage() {
   const { data: myReviews, isLoading: loadingMine } = useMyReviews();
   const loading = loadingPublic || loadingMine;
 
+  // Check if the customer already submitted a review this calendar month
+  const now = new Date();
+  const hasReviewThisMonth = (myReviews ?? []).some((r) => {
+    const d = new Date(r.createdAt);
+    return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+  });
+
+  const monthName = now.toLocaleString("en-US", { month: "long" });
+
   return (
     <div>
       <PageHeader
@@ -36,9 +45,21 @@ export default function ReviewsPage() {
         subtitle="Read community reviews and share your own experience"
         breadcrumb={[{ label: "Customer" }, { label: "Reviews" }]}
         action={
-          <Button onClick={() => setModalOpen(true)}>
-            <Star className="w-4 h-4" /> Write a Review
-          </Button>
+          <div className="flex flex-col items-end gap-1">
+            <Button
+              onClick={() => setModalOpen(true)}
+              disabled={hasReviewThisMonth}
+              title={hasReviewThisMonth ? `You already submitted a review in ${monthName}` : undefined}
+            >
+              <Star className="w-4 h-4" /> Write a Review
+            </Button>
+            {hasReviewThisMonth && (
+              <p className="text-[11px] text-zinc-400">
+                Already reviewed in {monthName} — next review available in{" "}
+                {new Date(now.getFullYear(), now.getMonth() + 1, 1).toLocaleString("en-US", { month: "long" })}
+              </p>
+            )}
+          </div>
         }
       />
 

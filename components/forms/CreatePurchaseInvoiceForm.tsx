@@ -1,9 +1,5 @@
 "use client";
 
-// TODO: Implement CreatePurchaseInvoiceForm
-// Fields: vendorId, items (array of { partId, quantity, unitPrice })
-// On submit: call useCreatePurchaseInvoice() mutation, show toast, call onSuccess()
-
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -11,7 +7,7 @@ import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 import { useCreatePurchaseInvoice } from "@/hooks/useInvoices";
 import toast from "react-hot-toast";
-import { Plus, Trash2 } from "lucide-react";
+import { Building2, Hash, Layers, Plus, Trash2, DollarSign } from "lucide-react";
 
 const schema = z.object({
   vendorId: z.coerce.number().positive("Vendor is required"),
@@ -48,6 +44,7 @@ export default function CreatePurchaseInvoiceForm({ onSuccess }: Props) {
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <Input
         label="Vendor ID"
+        icon={Building2}
         {...register("vendorId")}
         error={errors.vendorId?.message}
         type="number"
@@ -64,11 +61,11 @@ export default function CreatePurchaseInvoiceForm({ onSuccess }: Props) {
         <div className="space-y-2">
           {fields.map((field, i) => (
             <div key={field.id} className="flex gap-2 items-start">
-              <Input placeholder="Part ID"    {...register(`items.${i}.partId`)}    error={errors.items?.[i]?.partId?.message}    type="number" />
-              <Input placeholder="Qty"        {...register(`items.${i}.quantity`)}  error={errors.items?.[i]?.quantity?.message}  type="number" className="w-24" />
-              <Input placeholder="Unit Price" {...register(`items.${i}.unitPrice`)} error={errors.items?.[i]?.unitPrice?.message} type="number" />
+              <Input icon={Hash} placeholder="Part ID" {...register(`items.${i}.partId`)} error={errors.items?.[i]?.partId?.message} type="number" className="flex-1" />
+              <Input icon={Layers} placeholder="Qty" {...register(`items.${i}.quantity`)} error={errors.items?.[i]?.quantity?.message} type="number" className="w-28" />
+              <Input icon={DollarSign} placeholder="Unit Price" {...register(`items.${i}.unitPrice`)} error={errors.items?.[i]?.unitPrice?.message} type="number" className="flex-1" />
               {fields.length > 1 && (
-                <button type="button" onClick={() => remove(i)} className="mt-7 p-2 text-red-400 hover:text-red-600">
+                <button type="button" onClick={() => remove(i)} className="mt-2 p-2 text-red-400 hover:text-red-600">
                   <Trash2 className="w-4 h-4" />
                 </button>
               )}

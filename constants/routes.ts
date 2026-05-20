@@ -27,6 +27,7 @@ export const ROUTES = {
   STAFF_PART_REQUESTS: "/staff-part-requests",
   STAFF_APPOINTMENTS: "/staff-appointments",
   STAFF_CREDIT_MANAGEMENT: "/staff-credit-management",
+  STAFF_PROFILE: "/staff-profile",
 
   // Customer
   CUSTOMER_DASHBOARD: "/customer/dashboard",

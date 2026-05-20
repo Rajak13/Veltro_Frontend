@@ -14,10 +14,11 @@ import { useMyProfile, useDeleteVehicle } from "@/hooks/useCustomers";
 import type { CustomerSearchResult } from "@/hooks/useCustomers";
 import { useMyPurchaseHistory } from "@/hooks/useInvoices";
 import { useAuth } from "@/hooks/useAuth";
+import ChangePasswordForm from "@/components/forms/ChangePasswordForm";
 import {
   User, Car, Plus, Edit, Trash2, MapPin, Phone,
   Gift, Mail, ChevronLeft, ChevronRight, Hash, Gauge,
-  CheckCircle2, Percent,
+  CheckCircle2, Percent, Lock, KeyRound,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -27,7 +28,8 @@ const LOYALTY_THRESHOLD = 5000;
 
 export default function ProfilePage() {
   const [addVehicleOpen, setAddVehicleOpen]   = useState(false);
-  const [editProfileOpen, setEditProfileOpen] = useState(false);
+  const [editProfileOpen, setEditProfileOpen]     = useState(false);
+  const [changePasswordOpen, setChangePasswordOpen] = useState(false);
   const [editingVehicle, setEditingVehicle]   = useState<VehicleSummary | null>(null);
   const [viewingVehicle, setViewingVehicle]   = useState<VehicleSummary | null>(null);
   const [carouselIdx, setCarouselIdx]         = useState(0);
@@ -145,6 +147,23 @@ export default function ProfilePage() {
                   <p className="text-sm text-zinc-800 font-medium">{profile.address || "Not provided"}</p>
                 </div>
               </div>
+            </div>
+
+            {/* Security */}
+            <div className="border-t border-zinc-100 my-5" />
+            <div className="flex items-center justify-between gap-3 p-4 rounded-xl bg-zinc-50 border border-zinc-100">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-lg bg-white border border-zinc-200 flex items-center justify-center">
+                  <Lock className="w-4 h-4 text-zinc-500" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-zinc-800">Password</p>
+                  <p className="text-xs text-zinc-500">Change your account login password</p>
+                </div>
+              </div>
+              <Button variant="outline" size="sm" onClick={() => setChangePasswordOpen(true)}>
+                <KeyRound className="w-3.5 h-3.5" /> Change
+              </Button>
             </div>
 
             {/* Divider */}
@@ -378,6 +397,13 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
+
+      {/* Change password modal */}
+      {changePasswordOpen && (
+        <Modal open={changePasswordOpen} onClose={() => setChangePasswordOpen(false)} title="Change Password">
+          <ChangePasswordForm onSuccess={() => setChangePasswordOpen(false)} />
+        </Modal>
+      )}
 
       {/* Edit profile modal */}
       {editProfileOpen && (
