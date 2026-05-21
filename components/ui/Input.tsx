@@ -9,11 +9,12 @@ export const ICON_CLASS = "w-3.5 h-3.5";
 
 export function renderFieldIcon(icon?: LucideIcon | React.ReactNode) {
   if (!icon) return null;
-  if (typeof icon === "function") {
+  // Handle both regular function components and forwardRef components (lucide icons)
+  if (typeof icon === "function" || (typeof icon === "object" && icon !== null && "$$typeof" in (icon as object))) {
     const Icon = icon as LucideIcon;
     return <Icon className={ICON_CLASS} />;
   }
-  return icon;
+  return icon as React.ReactNode;
 }
 
 export const iconFieldWrapCls = (error?: boolean) =>
