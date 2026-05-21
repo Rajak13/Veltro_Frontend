@@ -18,6 +18,14 @@ export interface CreateStaffPayload {
   position?: string;
 }
 
+export interface UpdateStaffPayload {
+  fullName: string;
+  email: string;
+  /** Omit or leave blank to keep the existing password unchanged. */
+  password?: string;
+  position?: string;
+}
+
 export const useStaff = () =>
   useQuery({
     queryKey: ["staff"],
@@ -39,7 +47,7 @@ export const useCreateStaff = () => {
 export const useUpdateStaff = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, ...data }: CreateStaffPayload & { id: string }) =>
+    mutationFn: ({ id, ...data }: UpdateStaffPayload & { id: string }) =>
       api.put<ApiResponse<StaffMember>>(`/admin/staff/${id}`, data).then((r) => r.data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["staff"] }),
   });

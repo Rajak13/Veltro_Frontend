@@ -4,14 +4,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Car, Wrench, Search, ShoppingBag, PackagePlus,
-  CalendarPlus, CalendarCheck, Star, User, Gift, Cog, LogOut, ChevronDown,
+  CalendarPlus, CalendarCheck, Star, User, Gift, Cog, LogOut, ChevronDown, Bell,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { ROUTES } from "@/constants/routes";
 import { useState } from "react";
-import NotificationBell from "@/components/ui/NotificationBell";
 import { useMyAppointments } from "@/hooks/useAppointments";
+import { useNotifications } from "@/hooks/useNotifications";
 
 interface NavGroup {
   label: string;
@@ -61,6 +61,10 @@ export default function CustomerSidebar() {
     (a) => a.status === "Pending" || a.status === "Confirmed"
   ).length;
 
+  // Unread notification count
+  const { data: notifications = [] } = useNotifications();
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
+
   const toggle = (id: string) => setOpenGroup(prev => prev === id ? null : id);
 
   const isActive = (href: string) =>
@@ -103,11 +107,10 @@ export default function CustomerSidebar() {
         <p className="px-5 pt-3 pb-0.5 text-[10px] font-semibold text-zinc-300 uppercase tracking-widest">Account</p>
         <NavLink item={singleItems[8]} pathname={pathname} />
         <NavLink item={singleItems[9]} pathname={pathname} />
-        {/* Notifications — inline bell with dropdown */}
-        <div className="mx-2 px-3 py-2 flex items-center gap-2.5">
-          <NotificationBell />
-          <span className="text-[13px] font-[450] text-zinc-500">Notifications</span>
-        </div>
+        <NavLink
+          item={{ label: "Notifications", href: ROUTES.CUSTOMER_NOTIFICATIONS, icon: Bell, badge: unreadCount > 0 ? unreadCount : undefined }}
+          pathname={pathname}
+        />
       </nav>
 
       {/* User footer */}

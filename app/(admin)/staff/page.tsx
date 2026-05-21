@@ -12,11 +12,13 @@ import Table from "@/components/ui/Table";
 import Modal from "@/components/ui/Modal";
 import Badge from "@/components/ui/Badge";
 import CreateStaffForm from "@/components/forms/CreateStaffForm";
+import EditStaffForm from "@/components/forms/EditStaffForm";
 import { useStaff, useDeactivateStaff, type StaffMember } from "@/hooks/useStaff";
-import { Plus, UserCheck, UserX, AlertCircle } from "lucide-react";
+import { Plus, UserCheck, UserX, AlertCircle, Pencil } from "lucide-react";
 
 export default function StaffPage() {
   const [modalOpen, setModalOpen]           = useState(false);
+  const [editTarget, setEditTarget]         = useState<StaffMember | null>(null);
   const [confirmId, setConfirmId]           = useState<string | null>(null);
   const [confirmName, setConfirmName]       = useState("");
 
@@ -91,6 +93,13 @@ export default function StaffPage() {
               header: "Actions",
               render: (r) => (
                 <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setEditTarget(r)}
+                  >
+                    <Pencil className="w-3.5 h-3.5" /> Edit
+                  </Button>
                   {r.isActive ? (
                     <Button
                       variant="outline"
@@ -117,6 +126,13 @@ export default function StaffPage() {
       {/* Add Staff Modal */}
       <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="Add Staff Member">
         <CreateStaffForm onSuccess={() => setModalOpen(false)} />
+      </Modal>
+
+      {/* Edit Staff Modal */}
+      <Modal open={!!editTarget} onClose={() => setEditTarget(null)} title="Edit Staff Member">
+        {editTarget && (
+          <EditStaffForm staff={editTarget} onSuccess={() => setEditTarget(null)} />
+        )}
       </Modal>
 
       {/* Deactivate Confirmation Modal */}

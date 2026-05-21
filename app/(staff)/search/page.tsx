@@ -18,7 +18,6 @@ import { ROUTES } from "@/constants/routes";
 const SEARCH_TYPES = [
   { value: "name",    label: "Name" },
   { value: "phone",   label: "Phone" },
-  { value: "id",      label: "Customer ID" },
   { value: "vehicle", label: "Vehicle No." },
 ] as const;
 
@@ -55,7 +54,7 @@ export default function SearchPage() {
     <div>
       <PageHeader
         title="Search Customers"
-        subtitle="Find customers by name, phone, ID, or vehicle number"
+        subtitle="Find customers by name, phone, or vehicle number"
         breadcrumb={[{ label: "Staff" }, { label: "Search" }]}
       />
 
