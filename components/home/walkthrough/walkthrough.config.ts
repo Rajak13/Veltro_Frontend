@@ -1,6 +1,7 @@
 export interface WalkthroughSceneMeta {
   id: 1 | 2 | 3 | 4;
   label: string;
+  shortLabel?: string;
   code: string;
   subsystem: string;
   durationMs: number;
@@ -19,6 +20,7 @@ export const SCENES_META: WalkthroughSceneMeta[] = [
   {
     id: 1,
     label: "Telemetry & ECU Scan",
+    shortLabel: "Diagnosis",
     code: "CAN_0x308",
     subsystem: "DIAGNOSTICS",
     durationMs: 4200,
@@ -26,6 +28,7 @@ export const SCENES_META: WalkthroughSceneMeta[] = [
   {
     id: 2,
     label: "OEM Part Match",
+    shortLabel: "Parts",
     code: "VIN_BA123PA",
     subsystem: "COMPONENTS",
     durationMs: 4200,
@@ -33,6 +36,7 @@ export const SCENES_META: WalkthroughSceneMeta[] = [
   {
     id: 3,
     label: "Garage Dispatch",
+    shortLabel: "Booking",
     code: "HUB_NP-KTM",
     subsystem: "FACILITY",
     durationMs: 4200,
@@ -40,6 +44,7 @@ export const SCENES_META: WalkthroughSceneMeta[] = [
   {
     id: 4,
     label: "Settlement & Wallet",
+    shortLabel: "Invoice",
     code: "TX_VLT-8819",
     subsystem: "SETTLEMENT",
     durationMs: 4500,

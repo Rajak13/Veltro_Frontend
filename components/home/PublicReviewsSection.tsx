@@ -56,7 +56,7 @@ export default function PublicReviewsSection() {
 
   const dynamicReviews = (approved ?? []).length > 0
     ? (approved ?? []).map((r, i) => ({
-        id: r.id ?? i,
+        id: r.reviewId || String(i),
         name: r.customerName ?? "Verified Customer",
         car: "Registered Veltro Vehicle",
         tag: "Verified Repair",
