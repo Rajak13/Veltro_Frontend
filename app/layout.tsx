@@ -1,11 +1,18 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { JetBrains_Mono, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import Providers from "@/components/Providers";
 
-const inter = Inter({
+const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-mono",
+  weight: ["300", "400", "500", "600", "700", "800"],
+  display: "swap",
+});
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  variable: "--font-space-grotesk",
   weight: ["300", "400", "500", "600", "700"],
   display: "swap",
 });
@@ -33,8 +40,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={inter.variable} data-scroll-behavior="smooth">
-      <body>
+    <html
+      lang="en"
+      className={`${jetbrainsMono.variable} ${spaceGrotesk.variable} ${jetbrainsMono.className}`}
+      data-scroll-behavior="smooth"
+    >
+      <body className={`${jetbrainsMono.className} font-mono antialiased`}>
         <Providers>{children}</Providers>
       </body>
     </html>

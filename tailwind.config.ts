@@ -10,7 +10,10 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        inter: ["var(--font-inter)", "Inter", "sans-serif"],
+        sans: ["var(--font-mono)", "ui-monospace", "monospace"],
+        mono: ["var(--font-mono)", "ui-monospace", "monospace"],
+        inter: ["var(--font-mono)", "monospace"],
+        display: ["var(--font-space-grotesk)", "sans-serif"],
       },
       screens: {
         'xs': '475px',

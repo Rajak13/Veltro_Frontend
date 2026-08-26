@@ -33,9 +33,14 @@ export const usePublicReviews = () =>
   useQuery({
     queryKey: ["reviews", "public"],
     queryFn: async () => {
-      const res = await api.get<ApiResponse<PublicReview[]>>("/reviews");
-      return res.data.data ?? [];
+      try {
+        const res = await api.get<ApiResponse<PublicReview[]>>("/reviews");
+        return res.data.data ?? [];
+      } catch {
+        return [];
+      }
     },
+    retry: false,
     staleTime: 60_000,
   });
 
