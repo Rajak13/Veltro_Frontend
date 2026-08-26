@@ -64,25 +64,25 @@ export default function PartRequestsPage() {
           <div className="space-y-3">
             {paged.map((req) => (
               <Card key={req.id} padding="md">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-start gap-4 flex-1">
-                    <div className={`w-10 h-10 rounded-xl ${getStatusColor(req.status)} flex items-center justify-center flex-shrink-0`}>
+                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4">
+                  <div className="flex items-start gap-3 sm:gap-4 flex-1">
+                    <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl ${getStatusColor(req.status)} flex items-center justify-center flex-shrink-0`}>
                       {getStatusIcon(req.status)}
                     </div>
-                    <div className="flex-1">
+                    <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-zinc-800">{req.partName}</p>
                       <p className="text-xs text-zinc-500 mt-1">{req.description}</p>
-                      <p className="text-xs text-zinc-400 mt-2">
+                      <p className="text-[11px] sm:text-xs text-zinc-400 mt-2">
                         Requested on {new Date(req.createdAt).toLocaleDateString("en-US", {
                           year: "numeric", month: "short", day: "numeric",
                         })}
                       </p>
                     </div>
                   </div>
-                  <div className="flex flex-col items-end gap-2">
+                  <div className="flex items-center sm:flex-col sm:items-end justify-between gap-2 pt-2 sm:pt-0 border-t sm:border-0 border-zinc-100">
                     <Badge label={req.status} variant={statusVariant(req.status)} />
                     {req.status === "Sourced" && (
-                      <span className="text-xs text-green-600 font-medium">✓ Available now</span>
+                      <span className="text-[11px] sm:text-xs text-green-600 font-medium">✓ Available now</span>
                     )}
                   </div>
                 </div>

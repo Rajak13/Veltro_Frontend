@@ -74,7 +74,8 @@ export default function AppointmentsPage() {
         </div>
       ) : allAppointments.length ? (
         <>
-          <div className="bg-white border border-zinc-200 rounded-2xl shadow-sm overflow-hidden">
+          {/* Desktop Table View */}
+          <div className="hidden sm:block bg-white border border-zinc-200 rounded-2xl shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full border-collapse">
                 <thead>
@@ -138,6 +139,56 @@ export default function AppointmentsPage() {
                 </tbody>
               </table>
             </div>
+          </div>
+
+          {/* Mobile Card List */}
+          <div className="sm:hidden space-y-3">
+            {paged.map((appt, idx) => {
+              const id = appt.appointmentId || appt.id?.toString() || String(idx);
+              const date = new Date(appt.scheduledDate);
+              const vehicleLabel = appt.vehicleLabel || vehicleMap[appt.vehicleId] || appt.vehicleId || "—";
+              const serviceType = appt.serviceType || appt.notes || "Service";
+
+              return (
+                <div key={id} className="bg-white border border-zinc-200 rounded-xl p-4 shadow-sm space-y-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <div className="text-sm font-semibold text-zinc-900">
+                        {date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                      </div>
+                      <div className="text-xs text-zinc-500 font-mono">
+                        {date.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}
+                      </div>
+                    </div>
+                    <Badge label={formatAppointmentStatus(appt.status)} variant={statusVariant(appt.status)} />
+                  </div>
+
+                  <div className="flex items-center gap-2 py-2 border-y border-zinc-100">
+                    <div className="w-7 h-7 rounded-md bg-zinc-100 flex items-center justify-center flex-shrink-0">
+                      <Car className="w-3.5 h-3.5 text-zinc-500" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-semibold text-zinc-800 truncate">{vehicleLabel}</p>
+                      <p className="text-[11px] text-zinc-500 truncate">{serviceType}</p>
+                    </div>
+                  </div>
+
+                  {canCancel(appt) && (
+                    <div className="flex justify-end pt-1">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleCancel(id)}
+                        loading={isCancelling}
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200 text-xs w-full justify-center"
+                      >
+                        <X className="w-3.5 h-3.5" /> Cancel Appointment
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
           <Pagination
             page={page}

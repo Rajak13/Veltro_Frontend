@@ -13,6 +13,14 @@ import { SCENES_META } from "./walkthrough.config";
 
 export default function MacOSInteractiveWalkthrough() {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   // Single source of truth for active scene (1 | 2 | 3 | 4)
   const [activeScene, setActiveScene] = useState<1 | 2 | 3 | 4>(1);
@@ -31,10 +39,10 @@ export default function MacOSInteractiveWalkthrough() {
 
   // 2. Hero Text Animation:
   const heroOpacity = useTransform(scrollYProgress, [0, 0.08], [1, 0]);
-  const heroY = useTransform(scrollYProgress, [0, 0.08], [0, -30]);
+  const heroY = useTransform(scrollYProgress, [0, 0.08], [0, -25]);
   const heroDisplay = useTransform(scrollYProgress, (val) => (val > 0.1 ? "none" : "block"));
 
-  // 3. Side Cars (Responsive for Mobile & Desktop):
+  // 3. Side Cars:
   const leftCarX = useTransform(scrollYProgress, [0, 0.15], [0, -400]);
   const leftCarOpacity = useTransform(scrollYProgress, [0, 0.10], [1, 0]);
   const leftCarScale = useTransform(scrollYProgress, [0, 0.15], [1, 0.9]);
@@ -43,23 +51,25 @@ export default function MacOSInteractiveWalkthrough() {
   const rightCarOpacity = useTransform(scrollYProgress, [0, 0.10], [1, 0]);
   const rightCarScale = useTransform(scrollYProgress, [0, 0.15], [1, 0.9]);
 
-  // 4. macOS Window Scaling & Y Translation:
+  // 4. macOS Window Scaling & Dynamic Responsive Y Translation:
+  // On mobile: starts at y: 60px to avoid any empty dead gap.
+  // On desktop: starts at y: 320px to peek elegantly at bottom.
   const windowScale = useTransform(
     scrollYProgress,
     [0, 0.16, 0.88, 1.0],
-    [0.78, 1.0, 1.0, 0.82]
+    isMobile ? [0.94, 1.0, 1.0, 0.9] : [0.78, 1.0, 1.0, 0.82]
   );
 
   const windowY = useTransform(
     scrollYProgress,
     [0, 0.16, 0.88, 1.0],
-    [320, 0, 0, -30]
+    isMobile ? [60, 0, 0, -20] : [320, 0, 0, -30]
   );
 
   const windowBorderRadius = useTransform(
     scrollYProgress,
     [0, 0.16, 0.88, 1.0],
-    ["24px", "16px", "16px", "24px"]
+    ["20px", "16px", "16px", "20px"]
   );
 
   const windowOpacity = useTransform(
@@ -112,7 +122,7 @@ export default function MacOSInteractiveWalkthrough() {
     setIsPlaying((prev) => !prev);
   };
 
-  // ── Scroll-Linked Scene Scrubbing (0.16 -> 0.88 Full Screen Zone) ──
+  // ── Scroll-Linked Scene Scrubbing ──
   useEffect(() => {
     const unsubscribe = scrollYProgress.on("change", (progress) => {
       if (progress < 0.16) {
@@ -165,10 +175,10 @@ export default function MacOSInteractiveWalkthrough() {
       className="relative h-[300vh] sm:h-[320vh] bg-[#fafafa] text-[#18181b]"
       style={{ position: "relative" }}
     >
-      {/* ── Full-Width Edge-to-Edge Mobile-Friendly Navbar ── */}
+      {/* ── Full-Width Edge-to-Edge Navbar ── */}
       <motion.nav
         style={{ y: navbarY, opacity: navbarOpacity }}
-        className="fixed top-0 left-0 right-0 w-full px-4 sm:px-10 md:px-16 py-4 sm:py-6 flex items-center justify-between z-50 pointer-events-auto bg-gradient-to-b from-white/95 via-white/80 to-transparent backdrop-blur-[4px]"
+        className="fixed top-0 left-0 right-0 w-full px-4 sm:px-10 md:px-16 py-3.5 sm:py-6 flex items-center justify-between z-50 pointer-events-auto bg-gradient-to-b from-white/95 via-white/80 to-transparent backdrop-blur-[4px]"
       >
         {/* Left: Brand Logo */}
         <Link href="/" className="flex items-center gap-2">
@@ -177,7 +187,7 @@ export default function MacOSInteractiveWalkthrough() {
           </span>
         </Link>
 
-        {/* Center: Section Links (Hidden on small mobile screens for clean UI) */}
+        {/* Center: Section Links */}
         <div className="hidden lg:flex items-center gap-8 font-mono text-[11px] uppercase tracking-[0.2em] font-semibold text-zinc-600">
           <a href="#demo" className="hover:text-zinc-950 transition-colors">
             Demo
@@ -193,7 +203,7 @@ export default function MacOSInteractiveWalkthrough() {
           </a>
         </div>
 
-        {/* Right: Quick Action Buttons (Optimized for Mobile Touch) */}
+        {/* Right: Quick Action Buttons */}
         <div className="flex items-center gap-2 sm:gap-4 font-mono text-xs">
           <Link
             href="/login"
@@ -216,7 +226,7 @@ export default function MacOSInteractiveWalkthrough() {
       {/* ── Sticky Full-Screen Viewport ── */}
       <div className="sticky top-0 h-screen w-full flex flex-col items-center justify-center overflow-hidden px-2 sm:px-4 md:px-6 z-10">
 
-        {/* ── Left Side Car: White Mercedes (Responsive on Mobile & Desktop) ── */}
+        {/* ── Left Side Car: White Mercedes ── */}
         <motion.div
           style={{
             x: leftCarX,
@@ -232,7 +242,7 @@ export default function MacOSInteractiveWalkthrough() {
           />
         </motion.div>
 
-        {/* ── Right Side Car: Orange Mustang (Responsive on Mobile & Desktop) ── */}
+        {/* ── Right Side Car: Orange Mustang ── */}
         <motion.div
           style={{
             x: rightCarX,
@@ -248,25 +258,25 @@ export default function MacOSInteractiveWalkthrough() {
           />
         </motion.div>
 
-        {/* ── Hero Title + Subtitle (Fluid Responsive Sizing) ── */}
+        {/* ── Hero Title + Subtitle (Eliminated Mobile Empty Gap) ── */}
         <motion.div
           style={{
             opacity: heroOpacity,
             y: heroY,
             display: heroDisplay as any,
           }}
-          className="absolute top-16 xs:top-20 sm:top-24 md:top-28 text-center max-w-3xl px-3 sm:px-4 z-30 pointer-events-auto"
+          className="absolute top-14 xs:top-16 sm:top-24 md:top-28 text-center max-w-3xl px-3 sm:px-4 z-30 pointer-events-auto"
         >
-          <div className="text-[10px] sm:text-[11px] font-medium text-zinc-400 uppercase tracking-[0.25em] mb-2 sm:mb-3 font-sans">
+          <div className="text-[9px] sm:text-[11px] font-medium text-zinc-400 uppercase tracking-[0.25em] mb-1 sm:mb-3 font-sans">
             Vehicle Care Reimagined
           </div>
 
-          <h1 className="text-3xl xs:text-4xl sm:text-6xl md:text-7xl font-light tracking-tight leading-[1.08] font-sans">
+          <h1 className="text-2xl xs:text-3xl sm:text-6xl md:text-7xl font-light tracking-tight leading-[1.08] font-sans">
             <span className="text-[#9ca3af] font-light">A New Standard</span> <br />
             <span className="text-zinc-950 font-bold">in Vehicle Management</span>
           </h1>
 
-          <p className="text-xs sm:text-base font-light text-zinc-500 max-w-sm sm:max-w-xl mx-auto mt-2.5 sm:mt-4 leading-relaxed font-sans">
+          <p className="text-[11px] xs:text-xs sm:text-base font-light text-zinc-500 max-w-xs sm:max-w-xl mx-auto mt-1 sm:mt-4 leading-relaxed font-sans">
             Take complete control of your vehicle with a unified platform for AI health predictions, guaranteed OEM parts, and certified garage bookings.
           </p>
         </motion.div>
@@ -279,7 +289,7 @@ export default function MacOSInteractiveWalkthrough() {
             opacity: windowOpacity,
             borderRadius: windowBorderRadius,
           }}
-          className="w-full max-w-[98vw] sm:max-w-[96vw] xl:max-w-[1400px] h-[84vh] sm:h-[88vh] md:h-[91vh] flex items-center justify-center relative z-20 overflow-hidden shadow-[0_20px_70px_rgba(0,0,0,0.12)] bg-white"
+          className="w-full max-w-[98vw] sm:max-w-[96vw] xl:max-w-[1400px] h-[78vh] sm:h-[88vh] md:h-[91vh] flex items-center justify-center relative z-20 overflow-hidden shadow-[0_20px_70px_rgba(0,0,0,0.12)] bg-white mt-12 sm:mt-0"
         >
           <MacOSWindow
             activeScene={activeScene}
@@ -321,7 +331,7 @@ export default function MacOSInteractiveWalkthrough() {
         {/* ── Floating "✦ Scroll to explore" Pill ── */}
         <motion.div
           style={{ opacity: scrollPillOpacity }}
-          className="absolute bottom-4 sm:bottom-6 z-30 pointer-events-none flex items-center gap-1.5 text-[11px] sm:text-xs font-mono font-medium text-zinc-600 bg-white/95 backdrop-blur-md border border-zinc-200 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-xs"
+          className="absolute bottom-2 sm:bottom-6 z-30 pointer-events-none flex items-center gap-1.5 text-[10px] sm:text-xs font-mono font-medium text-zinc-600 bg-white/95 backdrop-blur-md border border-zinc-200 px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-xs"
         >
           <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-zinc-500" />
           <span>Scroll to explore</span>

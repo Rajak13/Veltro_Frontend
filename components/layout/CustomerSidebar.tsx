@@ -71,7 +71,7 @@ export default function CustomerSidebar() {
     pathname === href || (href !== "#" && pathname.startsWith(href.split("?")[0] + "/"));
 
   return (
-    <aside className="flex flex-col w-64 min-h-screen bg-white border-r border-zinc-200">
+    <aside className="hidden md:flex flex-col w-64 min-h-screen bg-white border-r border-zinc-200 flex-shrink-0">
       {/* Logo */}
       <div className="flex items-center gap-2.5 px-5 py-4 border-b border-zinc-100">
         <div className="w-7 h-7 rounded-md bg-orange-500 flex items-center justify-center shadow-sm">

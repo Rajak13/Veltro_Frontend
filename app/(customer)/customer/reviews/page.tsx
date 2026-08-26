@@ -45,11 +45,12 @@ export default function ReviewsPage() {
         subtitle="Read community reviews and share your own experience"
         breadcrumb={[{ label: "Customer" }, { label: "Reviews" }]}
         action={
-          <div className="flex flex-col items-end gap-1">
+          <div className="flex flex-col items-start sm:items-end gap-1 w-full sm:w-auto">
             <Button
               onClick={() => setModalOpen(true)}
               disabled={hasReviewThisMonth}
               title={hasReviewThisMonth ? `You already submitted a review in ${monthName}` : undefined}
+              className="w-full sm:w-auto justify-center"
             >
               <Star className="w-4 h-4" /> Write a Review
             </Button>

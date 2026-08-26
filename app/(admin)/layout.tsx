@@ -8,6 +8,7 @@ import Spinner from "@/components/ui/Spinner";
 import NotificationBell from "@/components/ui/NotificationBell";
 import { ROLES } from "@/constants/roles";
 import { Maximize2, Search } from "lucide-react";
+import MobileBottomNav from "@/components/layout/MobileBottomNav";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { role, isAuthenticated, user } = useAuth();
@@ -37,7 +38,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* Right column */}
       <div className="flex flex-col flex-1 overflow-hidden">
         {/* Top header */}
-        <header className="h-14 min-h-14 bg-white border-b border-zinc-200 flex items-center px-5 gap-3 z-30 lg:px-5 pl-16 lg:pl-5">
+        <header className="h-14 min-h-14 bg-white border-b border-zinc-200 flex items-center px-4 sm:px-5 gap-3 z-30 lg:px-5 pl-16 lg:pl-5">
           {/* Search */}
           <div className="flex items-center gap-2 bg-zinc-100 border-[1.5px] border-transparent focus-within:bg-white focus-within:border-zinc-200 rounded-lg px-2.5 py-1.5 transition-all flex-1 max-w-xs">
             <Search className="w-3.5 h-3.5 text-zinc-400 flex-shrink-0" />
@@ -65,7 +66,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
         {/* Scrollable content with dot grid */}
         <main
-          className="flex-1 overflow-y-auto"
+          className="flex-1 overflow-y-auto pb-20 md:pb-6"
           style={{
             backgroundImage: "radial-gradient(circle, #d4d4d8 0.5px, transparent 0.5px)",
             backgroundSize: "24px 24px",
@@ -74,6 +75,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <div className="max-w-7xl mx-auto p-4 sm:p-6">{children}</div>
         </main>
       </div>
+
+      {/* Mobile Bottom Navigation */}
+      <MobileBottomNav />
     </div>
   );
 }

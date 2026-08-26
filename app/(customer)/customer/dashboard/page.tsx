@@ -81,14 +81,14 @@ export default function CustomerDashboardPage() {
   return (
     <div>
       {/* Greeting */}
-      <div className="flex items-end justify-between mb-5">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-5">
         <div>
-          <h1 className="text-lg font-semibold text-zinc-900">
+          <h1 className="text-lg sm:text-xl font-semibold text-zinc-900">
             Hey, {user?.name?.split(" ")[0] ?? "there"}
           </h1>
           <p className="text-xs text-zinc-400 mt-0.5">{dateStr}</p>
         </div>
-        <div className="flex gap-1.5">
+        <div className="flex flex-wrap gap-1.5">
           <Link href={ROUTES.CUSTOMER_APPOINTMENTS} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium border-[1.5px] border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 transition-all">
             <CalendarPlus className="w-3 h-3 text-orange-500" />Book Service
           </Link>

@@ -116,12 +116,12 @@ export default function HistoryPage() {
         }
       />
 
-      <div className="flex gap-1 p-1 bg-zinc-100 rounded-xl w-fit mb-6">
+      <div className="flex gap-1 p-1 bg-zinc-100 rounded-xl w-full sm:w-fit mb-6">
         {(["purchases", "services"] as Tab[]).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all capitalize ${
+            className={`flex-1 sm:flex-initial px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all capitalize text-center ${
               tab === t ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-500 hover:text-zinc-700"
             }`}
           >

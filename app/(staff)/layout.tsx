@@ -8,6 +8,7 @@ import Spinner from "@/components/ui/Spinner";
 import NotificationBell from "@/components/ui/NotificationBell";
 import { ROLES } from "@/constants/roles";
 import { Search } from "lucide-react";
+import MobileBottomNav from "@/components/layout/MobileBottomNav";
 
 export default function StaffLayout({ children }: { children: React.ReactNode }) {
   const { role, isAuthenticated, user } = useAuth();
@@ -56,7 +57,7 @@ export default function StaffLayout({ children }: { children: React.ReactNode })
 
         {/* Scrollable content with dot grid */}
         <main
-          className="flex-1 overflow-y-auto"
+          className="flex-1 overflow-y-auto pb-20 md:pb-6"
           style={{
             backgroundImage: "radial-gradient(circle, #d4d4d8 0.5px, transparent 0.5px)",
             backgroundSize: "24px 24px",
@@ -65,6 +66,9 @@ export default function StaffLayout({ children }: { children: React.ReactNode })
           <div className="max-w-7xl mx-auto p-4 sm:p-6">{children}</div>
         </main>
       </div>
+
+      {/* Mobile Bottom Navigation */}
+      <MobileBottomNav />
     </div>
   );
 }
