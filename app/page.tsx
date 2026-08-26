@@ -13,6 +13,7 @@ import RoadTracksBackground from "@/components/home/RoadTracksBackground";
 import HorizontalWorkflowJourney from "@/components/home/HorizontalWorkflowJourney";
 import InteractiveLoyaltySection from "@/components/home/InteractiveLoyaltySection";
 import CtaHorizonBackground from "@/components/home/CtaHorizonBackground";
+import AutomotivePreloader from "@/components/home/AutomotivePreloader";
 
 const fadeUp = (delay = 0) => ({
   initial: { opacity: 0, y: 24 },
@@ -24,6 +25,9 @@ const fadeUp = (delay = 0) => ({
 export default function HomePage() {
   return (
     <main className="min-h-screen bg-[#fafafa] text-[#18181b] font-mono">
+      {/* Automotive Telemetry Ignition Preloader */}
+      <AutomotivePreloader />
+
       {/* Dot grid background */}
       <div className="fixed inset-0 pointer-events-none dot-grid" style={{ zIndex: -10 }} />
       
