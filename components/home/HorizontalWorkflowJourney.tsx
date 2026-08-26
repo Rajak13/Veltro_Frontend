@@ -7,6 +7,7 @@ import {
   ArrowRight, ShieldCheck, CheckCircle2, Disc, Clock, MapPin, Sparkles, Receipt, Droplets
 } from "lucide-react";
 import Link from "next/link";
+import WorkflowCircuitBackground from "./WorkflowCircuitBackground";
 
 interface WorkflowStep {
   id: number;
@@ -30,42 +31,42 @@ const STEPS: WorkflowStep[] = [
   {
     id: 1,
     num: "1",
-    shortTitle: "Create Account",
-    tag: "STEP 01 // INSTANT ACTIVATION",
-    headline: "Create Your Account & Digital Garage Passport",
+    shortTitle: "Account",
+    tag: "STEP 01 // ONBOARDING",
+    headline: "Create Your Account & Garage Passport",
     description: "Sign up in under 60 seconds to unlock a unified digital vehicle vault for all your cars, service records, and warranty certificates.",
     Icon: UserCheck,
     metric: "< 60s",
     metricLabel: "Setup Time",
-    badge: "Instant Activation",
+    badge: "Instant",
     previewData: {
       title: "Digital Vehicle Passport #VLT-8819",
       subtitle: "Unified Owner Account · Multi-Vehicle Vault",
       details: [
         { label: "Account Status", val: "Verified & Active" },
-        { label: "Digital Garage Vault", val: "Multi-Car Ready" },
-        { label: "Service History Passport", val: "Auto-Created" },
+        { label: "Digital Garage", val: "Multi-Car Ready" },
+        { label: "Service Passport", val: "Auto-Created" },
       ],
     },
   },
   {
     id: 2,
     num: "2",
-    shortTitle: "Add Vehicle",
+    shortTitle: "Vehicle",
     tag: "STEP 02 // VIN DIGITAL TWIN",
     headline: "Add Your Vehicle & Map Factory Specs",
     description: "Enter your model, year, and registration plate. Veltro immediately builds your vehicle's digital twin and maps 1,200+ compatible OEM parts.",
     Icon: Car,
     metric: "100%",
     metricLabel: "Fitment Guarantee",
-    badge: "BA 123 PA · Honda Civic",
+    badge: "BA 123 PA",
     previewData: {
-      title: "2022 Honda Civic 1.5L VTEC Turbo",
+      title: "2022 Honda Civic 1.5L Turbo",
       subtitle: "Plate: BA 123 PA · 34,500 KM · Owner: Rajesh Kumar",
       details: [
         { label: "ECU Protocol", val: "ISO-15765 CAN Bus" },
-        { label: "Catalog Filter", val: "1,247 OEM Parts Mapped" },
-        { label: "Factory Specs", val: "Verified from Manufacturer" },
+        { label: "Catalog Filter", val: "1,247 OEM Parts" },
+        { label: "Factory Specs", val: "Verified" },
       ],
     },
   },
@@ -73,20 +74,20 @@ const STEPS: WorkflowStep[] = [
     id: 3,
     num: "3",
     shortTitle: "AI Scan",
-    tag: "STEP 03 // PREDICTIVE TELEMETRY",
+    tag: "STEP 03 // TELEMETRY",
     headline: "Receive Continuous AI Diagnostic Insights",
     description: "Our neural health engine continuously monitors component wear on brake pads, engine oil, and electrical systems before failure occurs.",
     Icon: Zap,
     metric: "87/100",
-    metricLabel: "Overall Health Score",
-    badge: "1 Action Recommended",
+    metricLabel: "Health Score",
+    badge: "1 Action",
     previewData: {
-      title: "Front Brake Friction: 15% Remaining",
-      subtitle: "AI Warning: Critical friction threshold approaching",
+      title: "Front Brake Friction: 15% Left",
+      subtitle: "AI Warning: Replace in ~3,000 km",
       details: [
-        { label: "Powertrain / Oil", val: "98% (6,500 km left)" },
-        { label: "Front Brake Pads", val: "15% (Replace in ~3,000 km)" },
-        { label: "12V Battery", val: "92% (12.8V Nominal)" },
+        { label: "Powertrain / Oil", val: "98% (6,500 km)" },
+        { label: "Front Brake Pads", val: "15% (Critical)" },
+        { label: "12V Battery", val: "92% (12.8V)" },
       ],
     },
   },
@@ -94,20 +95,20 @@ const STEPS: WorkflowStep[] = [
     id: 4,
     num: "4",
     shortTitle: "Order & Book",
-    tag: "STEP 04 // CONNECTED DISPATCH",
-    headline: "Order Guaranteed Parts & Select Workshop Slot",
+    tag: "STEP 04 // DISPATCH",
+    headline: "Order Guaranteed Parts & Book Workshop",
     description: "Order OEM parts with 1-click and pick a service slot at an authorized garage. Hardware is pre-dispatched prior to your arrival.",
     Icon: CalendarCheck,
     metric: "Oct 20",
-    metricLabel: "Slot: Tue @ 10:00 AM",
-    badge: "Parts Pre-Forwarded",
+    metricLabel: "Slot: Tue @ 10 AM",
+    badge: "Pre-Dispatched",
     previewData: {
       title: "Miteri Auto Care — Central Garage Hub",
       subtitle: "OEM Front Brake Pad Kit + Certified Installation",
       details: [
         { label: "Selected Garage", val: "Miteri Auto Care (⭐ 4.9)" },
-        { label: "Labor & Safety Check", val: "Rs. 1,000 (Certified)" },
-        { label: "Post-Service Warranty", val: "30-Day / 1,000 KM Included" },
+        { label: "Technician Labor", val: "Rs. 1,000" },
+        { label: "Post-Warranty", val: "30-Day Included" },
       ],
     },
   },
@@ -116,26 +117,24 @@ const STEPS: WorkflowStep[] = [
     id_num: 5,
     num: "5",
     shortTitle: "Save 10%",
-    tag: "STEP 05 // LOYALTY REBATE",
+    tag: "STEP 05 // REWARDS",
     headline: "Automatic 10% Loyalty Savings & History",
     description: "Orders exceeding Rs. 5,000 automatically receive 10% instant rebate at checkout, and the completed invoice is logged to your service history.",
     Icon: Gift,
     metric: "Rs. 550",
-    metricLabel: "Instant Loyalty Savings",
-    badge: "10% Auto-Applied",
+    metricLabel: "Loyalty Savings",
+    badge: "10% Off",
     previewData: {
       title: "Official Tax Invoice #VLT-2026-8819",
       subtitle: "Rs. 5,500 - Rs. 550 Loyalty Credit = Rs. 4,950 Total",
       details: [
-        { label: "Hardware Subtotal", val: "Rs. 4,500 (Brake Kit)" },
-        { label: "10% Loyalty Rebate", val: "- Rs. 550 Auto-Deducted" },
-        { label: "Net Amount Paid", val: "Rs. 4,950 (Saved to Profile)" },
+        { label: "Hardware Subtotal", val: "Rs. 4,500" },
+        { label: "10% Loyalty Rebate", val: "- Rs. 550" },
+        { label: "Net Amount Paid", val: "Rs. 4,950" },
       ],
     },
   } as any,
 ];
-
-import WorkflowCircuitBackground from "./WorkflowCircuitBackground";
 
 export default function HorizontalWorkflowJourney() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -171,37 +170,37 @@ export default function HorizontalWorkflowJourney() {
   return (
     <div
       ref={containerRef}
-      className="relative h-[320vh] bg-[#fafafa] text-[#18181b]"
+      className="relative h-[300vh] sm:h-[320vh] bg-[#fafafa] text-[#18181b]"
     >
-      {/* ── Sticky Viewport (Pins and transforms step-by-step) ── */}
-      <div className="sticky top-0 h-screen w-full flex flex-col justify-center items-center py-12 px-4 sm:px-6 md:px-12 overflow-hidden z-10">
+      {/* ── Sticky Viewport ── */}
+      <div className="sticky top-0 h-screen w-full flex flex-col justify-center items-center py-6 sm:py-12 px-3 sm:px-6 md:px-12 overflow-hidden z-10">
         {/* Technical Blueprint & Telemetry Background */}
         <WorkflowCircuitBackground />
 
         {/* ── Header ── */}
-        <div className="max-w-4xl mx-auto text-center mb-6 md:mb-8 flex-shrink-0">
-          <div className="text-[11px] font-bold text-orange-600 uppercase tracking-[0.25em] mb-2 font-mono">
+        <div className="max-w-4xl mx-auto text-center mb-4 sm:mb-8 flex-shrink-0">
+          <div className="text-[10px] sm:text-[11px] font-bold text-orange-600 uppercase tracking-[0.25em] mb-1 sm:mb-2 font-mono">
             Simple Workflow
           </div>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-zinc-900">
+          <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold tracking-tight text-zinc-900">
             Five steps from diagnosis to delivery.
           </h2>
         </div>
 
-        {/* ── Minimalist 5-Step Numbered Line Track (Exact User Layout) ── */}
-        <div className="max-w-4xl mx-auto w-full mb-8 md:mb-10 relative z-20">
+        {/* ── Minimalist 5-Step Numbered Line Track ── */}
+        <div className="max-w-4xl mx-auto w-full mb-4 sm:mb-8 relative z-20">
           {/* Connector Line */}
-          <div className="absolute top-5 left-[8%] right-[8%] h-[2px] bg-zinc-200" />
+          <div className="absolute top-4 sm:top-5 left-[6%] right-[6%] h-[2px] bg-zinc-200" />
 
-          {/* Active Glowing Highway Progress Segment */}
+          {/* Active Glowing Progress Segment */}
           <div
-            className="absolute top-5 left-[8%] h-[2px] bg-orange-500 transition-all duration-500 shadow-[0_0_8px_#f97316]"
-            style={{ width: `${((activeStep - 1) / 4) * 84}%` }}
+            className="absolute top-4 sm:top-5 left-[6%] h-[2px] bg-orange-500 transition-all duration-500 shadow-[0_0_8px_#f97316]"
+            style={{ width: `${((activeStep - 1) / 4) * 88}%` }}
           />
 
           {/* 5 Minimalist Number Circles & Titles */}
-          <div className="grid grid-cols-5 gap-2 relative z-10">
-            {STEPS.map((s, idx) => {
+          <div className="grid grid-cols-5 gap-1 sm:gap-2 relative z-10">
+            {STEPS.map((s) => {
               const stepId = (s as any).id_num || s.id;
               const isActive = activeStep === stepId;
               const isPast = activeStep > stepId;
@@ -213,9 +212,9 @@ export default function HorizontalWorkflowJourney() {
                   className="step-item text-center cursor-pointer group focus:outline-none"
                 >
                   <div
-                    className={`w-10 h-10 rounded-full border-2 mx-auto mb-2 flex items-center justify-center text-sm font-bold transition-all duration-300 ${
+                    className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 mx-auto mb-1 sm:mb-2 flex items-center justify-center text-xs sm:text-sm font-bold transition-all duration-300 ${
                       isActive
-                        ? "border-orange-500 bg-orange-500 text-white shadow-md shadow-orange-500/30 scale-110"
+                        ? "border-orange-500 bg-orange-500 text-white shadow-md shadow-orange-500/30 scale-105 sm:scale-110"
                         : isPast
                         ? "border-orange-500 bg-white text-orange-600 font-bold"
                         : "border-zinc-200 bg-white text-zinc-400 group-hover:border-zinc-300"
@@ -224,7 +223,7 @@ export default function HorizontalWorkflowJourney() {
                     {s.num}
                   </div>
                   <h4
-                    className={`text-xs sm:text-sm font-bold transition-colors ${
+                    className={`text-[10px] sm:text-sm font-bold transition-colors truncate px-0.5 ${
                       isActive
                         ? "text-zinc-900"
                         : isPast
@@ -240,86 +239,86 @@ export default function HorizontalWorkflowJourney() {
           </div>
         </div>
 
-        {/* ── Transformed Dynamic Stage Showcase Container (Expands as user scrolls) ── */}
+        {/* ── Transformed Dynamic Stage Showcase Container ── */}
         <div className="max-w-4xl mx-auto w-full relative z-20">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeStep}
-              initial={{ opacity: 0, y: 14, scale: 0.98 }}
+              initial={{ opacity: 0, y: 12, scale: 0.98 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -14, scale: 0.98 }}
-              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-              className="bg-white border border-zinc-200/90 rounded-3xl p-6 sm:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.08)] grid grid-cols-1 md:grid-cols-12 gap-6 items-center select-none"
+              exit={{ opacity: 0, y: -12, scale: 0.98 }}
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="bg-white border border-zinc-200/90 rounded-2xl sm:rounded-3xl p-4 sm:p-8 shadow-[0_15px_40px_rgba(0,0,0,0.06)] grid grid-cols-1 md:grid-cols-12 gap-4 sm:gap-6 items-center select-none"
             >
               {/* Left Column: Stage Copy & Live Metric */}
               <div className="md:col-span-7 flex flex-col justify-between">
                 <div>
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="text-[10px] font-bold font-mono text-orange-600 uppercase tracking-wider bg-orange-50 px-2.5 py-0.5 rounded-md border border-orange-100">
+                  <div className="flex items-center gap-2 mb-2 sm:mb-3">
+                    <span className="text-[9px] sm:text-[10px] font-bold font-mono text-orange-600 uppercase tracking-wider bg-orange-50 px-2 sm:px-2.5 py-0.5 rounded-md border border-orange-100">
                       {currentStep.tag}
                     </span>
-                    <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200/60 font-mono">
+                    <span className="text-[10px] sm:text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/60 font-mono">
                       {currentStep.badge}
                     </span>
                   </div>
 
-                  <h3 className="text-xl sm:text-2xl font-bold text-zinc-900 tracking-tight mb-2">
+                  <h3 className="text-lg sm:text-2xl font-bold text-zinc-900 tracking-tight mb-1 sm:mb-2">
                     {currentStep.headline}
                   </h3>
-                  <p className="text-xs sm:text-sm font-light text-zinc-500 leading-relaxed mb-5">
+                  <p className="text-xs sm:text-sm font-light text-zinc-500 leading-relaxed mb-3 sm:mb-5">
                     {currentStep.description}
                   </p>
                 </div>
 
-                <div className="flex items-center gap-4 pt-4 border-t border-zinc-100">
-                  <div className="w-10 h-10 rounded-2xl bg-orange-500 text-white flex items-center justify-center shadow-xs shadow-orange-500/20 flex-shrink-0">
-                    <StepIcon className="w-5 h-5" />
+                <div className="flex items-center gap-3 pt-3 sm:pt-4 border-t border-zinc-100">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-orange-500 text-white flex items-center justify-center shadow-xs shadow-orange-500/20 flex-shrink-0">
+                    <StepIcon className="w-4 h-4 sm:w-5 sm:h-5" />
                   </div>
                   <div>
-                    <span className="text-[10px] text-zinc-400 font-medium block uppercase tracking-wider">
+                    <span className="text-[9px] sm:text-[10px] text-zinc-400 font-medium block uppercase tracking-wider">
                       {currentStep.metricLabel}
                     </span>
-                    <span className="text-base sm:text-lg font-black text-zinc-900 font-mono">
+                    <span className="text-sm sm:text-lg font-black text-zinc-900 font-mono">
                       {currentStep.metric}
                     </span>
                   </div>
                 </div>
               </div>
 
-              {/* Right Column: Interactive Live Mockup Widget */}
-              <div className="md:col-span-5 bg-gradient-to-b from-zinc-50 to-zinc-100/60 border border-zinc-200/80 rounded-2xl p-5 shadow-2xs">
-                <div className="flex items-center justify-between gap-2 mb-3 pb-2 border-b border-zinc-200/60">
+              {/* Right Column: Live Mockup Widget */}
+              <div className="md:col-span-5 bg-gradient-to-b from-zinc-50 to-zinc-100/60 border border-zinc-200/80 rounded-xl sm:rounded-2xl p-3.5 sm:p-5 shadow-2xs">
+                <div className="flex items-center justify-between gap-2 mb-2 pb-1.5 border-b border-zinc-200/60">
                   <div className="text-xs font-bold text-zinc-900 truncate">
                     {currentStep.previewData.title}
                   </div>
                   <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse flex-shrink-0" />
                 </div>
 
-                <p className="text-[11px] text-zinc-500 mb-3">
+                <p className="text-[10px] sm:text-[11px] text-zinc-500 mb-2 sm:mb-3">
                   {currentStep.previewData.subtitle}
                 </p>
 
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   {currentStep.previewData.details.map((d) => (
                     <div
                       key={d.label}
-                      className="p-2 bg-white rounded-xl border border-zinc-200/60 flex items-center justify-between text-xs shadow-2xs"
+                      className="p-1.5 sm:p-2 bg-white rounded-lg sm:rounded-xl border border-zinc-200/60 flex items-center justify-between text-xs shadow-2xs"
                     >
-                      <span className="text-zinc-500 text-[11px]">{d.label}</span>
-                      <span className="font-bold text-zinc-900 font-mono text-[11px]">
+                      <span className="text-zinc-500 text-[10px] sm:text-[11px]">{d.label}</span>
+                      <span className="font-bold text-zinc-900 font-mono text-[10px] sm:text-[11px]">
                         {d.val}
                       </span>
                     </div>
                   ))}
                 </div>
 
-                <div className="mt-4 pt-3 border-t border-zinc-200/60 flex justify-end">
+                <div className="mt-3 pt-2 border-t border-zinc-200/60 flex justify-end">
                   <Link
                     href="/register"
-                    className="inline-flex items-center gap-1.5 text-xs font-bold text-orange-600 hover:text-orange-700 transition-colors"
+                    className="inline-flex items-center gap-1 text-[11px] sm:text-xs font-bold text-orange-600 hover:text-orange-700 transition-colors"
                   >
-                    <span>Try Step in Veltro</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
+                    <span>Try Step</span>
+                    <ArrowRight className="w-3 h-3" />
                   </Link>
                 </div>
               </div>
@@ -328,10 +327,10 @@ export default function HorizontalWorkflowJourney() {
         </div>
 
         {/* ── Bottom Step Status Hint ── */}
-        <div className="max-w-4xl mx-auto w-full flex items-center justify-between text-xs text-zinc-400 pt-6 font-mono z-20">
-          <span>STEP {activeStep} OF 5 // SCROLL TO ADVANCE WORKFLOW</span>
+        <div className="max-w-4xl mx-auto w-full flex items-center justify-between text-[10px] sm:text-xs text-zinc-400 pt-3 sm:pt-6 font-mono z-20">
+          <span>STEP {activeStep} OF 5</span>
           <span className="text-orange-600 font-semibold">
-            {activeStep === 5 ? "WORKFLOW COMPLETE ✓" : "CONTINUE SCROLLING ↓"}
+            {activeStep === 5 ? "COMPLETE ✓" : "SCROLL ↓"}
           </span>
         </div>
 
