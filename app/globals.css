@@ -13,11 +13,9 @@ body {
   font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   background: #fafafa;
   color: #18181b;
-  overflow-x: hidden;
   letter-spacing: -0.01em;
+  -webkit-font-smoothing: antialiased;
 }
-
-html { scroll-behavior: smooth; }
 
 /* ── Responsive utilities ── */
 @layer utilities {

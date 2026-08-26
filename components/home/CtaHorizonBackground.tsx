@@ -1,20 +1,18 @@
 "use client";
 
-import { motion } from "framer-motion";
-
 export default function CtaHorizonBackground() {
   return (
     <div className="absolute inset-0 pointer-events-none overflow-hidden select-none z-0">
-      {/* ── Soft Ambient Glow at the Horizon Vanishing Point ── */}
+      {/* ── Soft Ambient Glow at the Horizon ── */}
       <div
         className="absolute top-10 left-1/2 -translate-x-1/2 w-[700px] h-[350px] rounded-full pointer-events-none opacity-40"
         style={{
-          background: "radial-gradient(ellipse, rgba(249,115,22,0.12) 0%, transparent 70%)",
+          background: "radial-gradient(ellipse, rgba(249,115,22,0.10) 0%, transparent 70%)",
           filter: "blur(60px)",
         }}
       />
 
-      {/* ── Perspective Highway Lines Toward Vanishing Horizon ── */}
+      {/* ── Perspective Highway Lines ── */}
       <svg
         className="w-full h-full absolute inset-0 opacity-40"
         viewBox="0 0 1440 600"
@@ -33,14 +31,13 @@ export default function CtaHorizonBackground() {
           </linearGradient>
         </defs>
 
-        {/* Perspective Runway Ray Lines (Vanishing Point at 720, 40) */}
         <line x1="720" y1="40" x2="-200" y2="650" stroke="url(#grid-fade)" strokeWidth="1" />
         <line x1="720" y1="40" x2="100" y2="650" stroke="url(#grid-fade)" strokeWidth="1" />
         <line x1="720" y1="40" x2="350" y2="650" stroke="url(#grid-fade)" strokeWidth="1.5" />
         <line x1="720" y1="40" x2="550" y2="650" stroke="url(#horizon-fade)" strokeWidth="2" />
 
-        {/* Center Illuminated Dashed Guideline */}
-        <motion.line
+        {/* Center Guideline */}
+        <line
           x1="720"
           y1="40"
           x2="720"
@@ -48,9 +45,6 @@ export default function CtaHorizonBackground() {
           stroke="url(#horizon-fade)"
           strokeWidth="2.5"
           strokeDasharray="16 20"
-          initial={{ strokeDashoffset: 0 }}
-          animate={{ strokeDashoffset: -72 }}
-          transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
         />
 
         <line x1="720" y1="40" x2="890" y2="650" stroke="url(#horizon-fade)" strokeWidth="2" />

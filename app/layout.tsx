@@ -43,7 +43,6 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${jetbrainsMono.variable} ${spaceGrotesk.variable} ${jetbrainsMono.className}`}
-      data-scroll-behavior="smooth"
     >
       <body className={`${jetbrainsMono.className} font-mono antialiased`}>
         <Providers>{children}</Providers>
